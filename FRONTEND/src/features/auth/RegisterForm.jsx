@@ -17,7 +17,7 @@ export default function RegisterForm() {
         nombre: '',
         apellidoPaterno: '',
         apellidoMaterno: '',
-        fechaNacimiento: null,
+        fechaNacimiento: '',
         // Step 2
         correo: '',
         usuario: '',
@@ -27,6 +27,27 @@ export default function RegisterForm() {
         pin: '',
         confirmarPin: '',
     });
+
+    const parseDateString = (dateStr) => {
+        // Expects DD/MM/YYYY format
+        const parts = dateStr.split('/');
+        if (parts.length !== 3) return null;
+
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+        const year = parseInt(parts[2], 10);
+
+        if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+
+        const date = new Date(year, month, day);
+
+        // Validate the date
+        if (date.getDate() !== day || date.getMonth() !== month || date.getFullYear() !== year) {
+            return null;
+        }
+
+        return date;
+    };
 
     const validateStep1 = () => {
         const newErrors = {};
@@ -39,20 +60,25 @@ export default function RegisterForm() {
             newErrors.apellidoPaterno = 'El apellido paterno es obligatorio';
         }
 
-        if (!formData.fechaNacimiento) {
+        if (!formData.fechaNacimiento.trim()) {
             newErrors.fechaNacimiento = 'La fecha de nacimiento es obligatoria';
         } else {
-            const today = new Date();
-            const birthDate = new Date(formData.fechaNacimiento);
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
+            const birthDate = parseDateString(formData.fechaNacimiento);
 
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
+            if (!birthDate) {
+                newErrors.fechaNacimiento = 'Formato invalido. Usa DD/MM/YYYY';
+            } else {
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
 
-            if (age < 18) {
-                newErrors.fechaNacimiento = 'Debes tener al menos 18 anos';
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+
+                if (age < 18) {
+                    newErrors.fechaNacimiento = 'Debes tener al menos 18 anos';
+                }
             }
         }
 
@@ -127,11 +153,18 @@ export default function RegisterForm() {
 
         setLoading(true);
         try {
+            // Parse date from DD/MM/YYYY to YYYY-MM-DD
+            const birthDate = parseDateString(formData.fechaNacimiento);
+            const year = birthDate.getFullYear();
+            const month = String(birthDate.getMonth() + 1).padStart(2, '0');
+            const day = String(birthDate.getDate()).padStart(2, '0');
+            const fechaISO = `${year}-${month}-${day}`;
+
             const userData = {
                 nombre: formData.nombre,
                 apellidoPaterno: formData.apellidoPaterno,
                 apellidoMaterno: formData.apellidoMaterno || null,
-                fechaNacimiento: formData.fechaNacimiento.toISOString().split('T')[0],
+                fechaNacimiento: fechaISO,
                 correo: formData.correo,
                 usuario: formData.usuario,
                 contrasena: formData.contrasena,

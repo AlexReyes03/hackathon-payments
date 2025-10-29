@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar } from 'primereact/calendar';
+import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import FloatingInput from './FloatingInput';
 
@@ -9,9 +9,7 @@ export default function RegisterStep1({
     errors,
     onContinue
 }) {
-    const today = new Date();
-    const minDate = new Date();
-    minDate.setFullYear(today.getFullYear() - 100);
+    const navigate = useNavigate();
 
     return (
         <div className="d-flex flex-column gap-3">
@@ -43,31 +41,14 @@ export default function RegisterStep1({
                 error={errors.apellidoMaterno}
             />
 
-            <div className="mb-3">
-                <label className="form-label" style={{ color: '#ffffff' }}>
-                    Fecha de nacimiento
-                </label>
-                <Calendar
-                    value={formData.fechaNacimiento}
-                    onChange={(e) => setFormData({ ...formData, fechaNacimiento: e.value })}
-                    dateFormat="dd/mm/yy"
-                    inline
-                    maxDate={today}
-                    minDate={minDate}
-                    yearNavigator
-                    monthNavigator
-                    yearRange={`${today.getFullYear() - 100}:${today.getFullYear()}`}
-                    className="w-100"
-                    panelStyle={{
-                        backgroundColor: '#2a2a2a',
-                        border: '1px solid #444',
-                        borderRadius: '8px',
-                    }}
-                />
-                {errors.fechaNacimiento && (
-                    <small className="text-danger d-block mt-1">{errors.fechaNacimiento}</small>
-                )}
-            </div>
+            <FloatingInput
+                id="fechaNacimiento"
+                label="Fecha de nacimiento"
+                placeholder="DD/MM/YYYY"
+                value={formData.fechaNacimiento}
+                onChange={(e) => setFormData({ ...formData, fechaNacimiento: e.target.value })}
+                error={errors.fechaNacimiento}
+            />
 
             <Button
                 type="button"
@@ -84,6 +65,17 @@ export default function RegisterStep1({
                     color: '#000000',
                 }}
             />
+
+            <div className="text-center">
+                <button
+                    type="button"
+                    onClick={() => navigate('/')}
+                    className="btn btn-link text-decoration-none"
+                    style={{ color: '#ffffff', fontSize: '0.9rem' }}
+                >
+                    Volver al inicio de sesion
+                </button>
+            </div>
         </div>
     );
 }
