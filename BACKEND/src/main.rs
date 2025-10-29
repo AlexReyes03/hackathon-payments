@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
     tracing::info!("Starting Wallet Backend Server...");
 
     let config = Config::load().context("Failed to load configuration")?;
-    config.validate().context("Configuration validation failed")?;
+    config.validate().map_err(|e| anyhow::anyhow!("Configuration validation failed: {}", e))?;
     
     tracing::info!("Configuration loaded successfully");
     tracing::debug!("Server config: {}:{}", config.server.host, config.server.port);

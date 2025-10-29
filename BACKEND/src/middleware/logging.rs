@@ -1,5 +1,4 @@
 use axum::{
-    body::Body,
     extract::Request,
     http::StatusCode,
     middleware::Next,
@@ -19,21 +18,47 @@ pub async fn log_request(req: Request, next: Next) -> Response {
     let duration = start.elapsed();
     let status = response.status();
 
-    let log_level = match status.as_u16() {
-        200..=299 => tracing::Level::INFO,
-        400..=499 => tracing::Level::WARN,
-        500..=599 => tracing::Level::ERROR,
-        _ => tracing::Level::INFO,
-    };
+    let status_code = status.as_u16();
+    let duration_ms = duration.as_millis();
 
-    tracing::event!(
-        log_level,
-        "<-- {} {} {} ({:.2}ms)",
-        method,
-        uri,
-        status.as_u16(),
-        duration.as_millis()
-    );
+    match status_code {
+        200..=299 => {
+            tracing::info!(
+                "<-- {} {} {} ({:.2}ms)",
+                method,
+                uri,
+                status_code,
+                duration_ms
+            );
+        }
+        400..=499 => {
+            tracing::warn!(
+                "<-- {} {} {} ({:.2}ms)",
+                method,
+                uri,
+                status_code,
+                duration_ms
+            );
+        }
+        500..=599 => {
+            tracing::error!(
+                "<-- {} {} {} ({:.2}ms)",
+                method,
+                uri,
+                status_code,
+                duration_ms
+            );
+        }
+        _ => {
+            tracing::info!(
+                "<-- {} {} {} ({:.2}ms)",
+                method,
+                uri,
+                status_code,
+                duration_ms
+            );
+        }
+    }
 
     response
 }

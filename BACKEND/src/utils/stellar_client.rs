@@ -51,9 +51,10 @@ impl StellarClient {
 
         let json: Value = response.json().await.context("Failed to parse response")?;
         
+        let empty_vec = vec![];
         let records = json["_embedded"]["records"]
             .as_array()
-            .unwrap_or(&vec![])
+            .unwrap_or(&empty_vec)
             .clone();
 
         Ok(records)
@@ -104,9 +105,10 @@ impl StellarClient {
 }
 
 pub fn extract_balances(account_json: &Value) -> Vec<(String, String)> {
+    let empty_vec = vec![];
     let balances = account_json["balances"]
         .as_array()
-        .unwrap_or(&vec![]);
+        .unwrap_or(&empty_vec);
 
     let mut result = Vec::new();
     for balance in balances {

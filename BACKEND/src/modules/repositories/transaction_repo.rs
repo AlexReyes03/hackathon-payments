@@ -76,7 +76,7 @@ impl TransactionRepository {
         )
         .fetch_one(&self.pool)
         .await?;
-        Ok(result)
+        Ok(result.into())
     }
 
     pub async fn sum_volume_by_wallet_id(&self, wallet_id: &str) -> Result<f64> {

@@ -1,8 +1,8 @@
-use anyhow::{Context, Result};
-use ed25519_dalek::{PublicKey, SecretKey};
+use anyhow::Result;
+use ed25519_dalek::{VerifyingKey, SigningKey};
 use sha2::{Sha256, Digest};
 
-pub fn encode_stellar_public(key: &PublicKey) -> String {
+pub fn encode_stellar_public(key: &VerifyingKey) -> String {
     let version_byte: u8 = 6 << 3;
     let mut data = vec![version_byte];
     data.extend_from_slice(key.as_bytes());
@@ -14,7 +14,7 @@ pub fn encode_stellar_public(key: &PublicKey) -> String {
     format!("G{}", encoded)
 }
 
-pub fn encode_stellar_secret(key: &SecretKey) -> String {
+pub fn encode_stellar_secret(key: &SigningKey) -> String {
     let version_byte: u8 = 18 << 3;
     let mut data = vec![version_byte];
     data.extend_from_slice(key.as_bytes());

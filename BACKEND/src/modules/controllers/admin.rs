@@ -47,9 +47,9 @@ pub async fn get_stats(
     let aa_signers = state.aa_service.list_signers().await;
 
     Ok(Json(AdminStatsResponse {
-        total_wallets,
-        total_transactions,
-        total_bank_transfers,
+        total_wallets: total_wallets.into(),
+        total_transactions: total_transactions.into(),
+        total_bank_transfers: total_bank_transfers.into(),
         aa_wallets_count: aa_signers.len(),
     }))
 }

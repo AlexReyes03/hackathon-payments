@@ -15,7 +15,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 # Database
-sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "migrate", "macros"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "migrate", "macros", "chrono"] }
 
 # HTTP Client
 reqwest = { version = "0.12", features = ["json"] }
@@ -29,13 +29,14 @@ anyhow = "1.0"
 thiserror = "1.0"
 
 # Stellar SDK (verificar disponibilidad, fallback a HTTP directo si no compila)
-stellar_sdk = { version = "0.0.1", optional = true }
+stellar_sdk = { version = "0.1.4", optional = true }
 
 # Cryptography for Stellar keypairs
 ed25519-dalek = "2.1"
 sha2 = "0.10"
 base32 = "0.4"
 hex = "0.4"
+rand = "0.8"
 
 # Utils
 chrono = { version = "0.4", features = ["serde"] }

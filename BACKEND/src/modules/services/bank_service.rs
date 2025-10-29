@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use std::sync::Arc;
 use chrono::Utc;
 
@@ -62,7 +62,7 @@ impl BankService {
                     reputation.trust_score, threshold
                 )),
                 reputation_score: Some(reputation.trust_score as i64),
-                created_at: Utc::now(),
+                created_at: Utc::now().naive_utc(),
                 completed_at: None,
             };
 
@@ -83,7 +83,7 @@ impl BankService {
         }
 
         let transfer_id = uuid::Uuid::new_v4().to_string();
-        let now = Utc::now();
+        let now = Utc::now().naive_utc();
         
         let transfer = BankTransfer {
             id: transfer_id.clone(),

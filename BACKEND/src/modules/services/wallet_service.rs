@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use std::sync::Arc;
-use ed25519_dalek::{Keypair, PublicKey, SecretKey, Signer};
-use rand::rngs::OsRng;
+use ed25519_dalek::{SigningKey, VerifyingKey};
+use rand::{rngs::OsRng, Rng};
 use sha2::{Sha256, Digest};
 
 use crate::modules::models::{
@@ -19,7 +19,7 @@ use crate::modules::services::{
 
 #[derive(Clone)]
 pub struct WalletService {
-    wallet_repo: Arc<WalletRepository>,
+    pub wallet_repo: Arc<WalletRepository>,
     transaction_repo: Arc<TransactionRepository>,
     aa_service: Arc<AaService>,
     stellar_service: Arc<StellarService>,
@@ -51,8 +51,8 @@ impl WalletService {
             id: uuid::Uuid::new_v4().to_string(),
             public_key: public_key.clone(),
             is_aa_wallet: aa_mode,
-            created_at: chrono::Utc::now(),
-            updated_at: chrono::Utc::now(),
+            created_at: chrono::Utc::now().naive_utc(),
+            updated_at: chrono::Utc::now().naive_utc(),
         };
 
         self.wallet_repo.create(&wallet).await
@@ -90,7 +90,7 @@ impl WalletService {
             amount: "10000.0000000".to_string(),
             asset: "XLM".to_string(),
             status: TransactionStatus::Completed.to_string(),
-            created_at: chrono::Utc::now(),
+            created_at: chrono::Utc::now().naive_utc(),
         };
 
         self.transaction_repo.create(&transaction).await
@@ -141,7 +141,7 @@ impl WalletService {
             amount: amount.to_string(),
             asset: asset_code.unwrap_or("XLM").to_string(),
             status: TransactionStatus::Completed.to_string(),
-            created_at: chrono::Utc::now(),
+            created_at: chrono::Utc::now().naive_utc(),
         };
 
         self.transaction_repo.create(&transaction).await
@@ -160,15 +160,19 @@ impl WalletService {
 
     fn generate_stellar_keypair() -> Result<(String, String)> {
         let mut csprng = OsRng{};
-        let keypair: Keypair = Keypair::generate(&mut csprng);
+        let mut secret_bytes = [0u8; 32];
+        csprng.fill(&mut secret_bytes);
         
-        let public_key = Self::encode_stellar_public(&keypair.public);
-        let secret_key = Self::encode_stellar_secret(&keypair.secret);
+        let signing_key = SigningKey::from_bytes(&secret_bytes);
+        let verifying_key = signing_key.verifying_key();
+        
+        let public_key = Self::encode_stellar_public(&verifying_key);
+        let secret_key = Self::encode_stellar_secret(&signing_key);
         
         Ok((public_key, secret_key))
     }
 
-    fn encode_stellar_public(key: &PublicKey) -> String {
+    fn encode_stellar_public(key: &VerifyingKey) -> String {
         let version_byte: u8 = 6 << 3;
         let mut data = vec![version_byte];
         data.extend_from_slice(key.as_bytes());
@@ -180,7 +184,7 @@ impl WalletService {
         format!("G{}", encoded)
     }
 
-    fn encode_stellar_secret(key: &SecretKey) -> String {
+    fn encode_stellar_secret(key: &SigningKey) -> String {
         let version_byte: u8 = 18 << 3;
         let mut data = vec![version_byte];
         data.extend_from_slice(key.as_bytes());

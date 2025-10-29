@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use std::sync::Arc;
 use chrono::Utc;
 
@@ -59,7 +59,7 @@ impl ReputationService {
             level,
             tx_count,
             total_volume,
-            last_calculated: Utc::now(),
+            last_calculated: Utc::now().naive_utc(),
         })
     }
 
