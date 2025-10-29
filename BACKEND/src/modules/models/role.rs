@@ -27,9 +27,9 @@ impl UserRole {
 
     pub fn to_id(&self) -> String {
         match self {
-            UserRole::Admin => "role_admin".to_string(),
-            UserRole::User => "role_user".to_string(),
-            UserRole::Merchant => "role_merchant".to_string(),
+            UserRole::Admin => "ADMIN".to_string(),
+            UserRole::User => "USER".to_string(),
+            UserRole::Merchant => "MERCHANT".to_string(),
         }
     }
 
