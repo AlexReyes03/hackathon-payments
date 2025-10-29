@@ -8,6 +8,8 @@ pub struct User {
     pub email: String,
     #[serde(skip_serializing)]
     pub password_hash: String,
+    #[serde(skip_serializing)]
+    pub password_hash: String,
     pub first_name: String,
     pub last_name_paternal: String,
     pub last_name_maternal: String,
@@ -23,12 +25,13 @@ pub struct RegisterRequest {
     pub username: String,
     pub email: String,
     pub password: String,
+    pub pin: String,
     pub first_name: String,
     pub last_name_paternal: String,
     pub last_name_maternal: String,
     pub birth_date: String, // YYYY-MM-DD format
     pub aa_mode: Option<bool>, // Whether to create AA wallet
-    pub role: Option<String>, // "admin", "user", "merchant"
+    pub role: Option<String>, // "ADMIN", "USER"
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,7 +51,10 @@ pub struct RegisterResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LoginRequest {
     pub username: String,
-    pub password: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub password: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pin: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

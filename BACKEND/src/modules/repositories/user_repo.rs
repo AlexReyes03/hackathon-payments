@@ -15,13 +15,14 @@ impl UserRepository {
     pub async fn create(&self, user: &User) -> Result<()> {
         sqlx::query!(
             r#"
-            INSERT INTO users (id, username, email, password_hash, first_name, last_name_paternal, last_name_maternal, birth_date, wallet_id, role_id, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO users (id, username, email, password_hash, pin_hash, first_name, last_name_paternal, last_name_maternal, birth_date, wallet_id, role_id, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             "#,
             user.id,
             user.username,
             user.email,
             user.password_hash,
+            user.pin_hash,
             user.first_name,
             user.last_name_paternal,
             user.last_name_maternal,
@@ -40,7 +41,7 @@ impl UserRepository {
         let user = sqlx::query_as!(
             User,
             r#"
-            SELECT id, username, email, password_hash, first_name, last_name_paternal, last_name_maternal, birth_date, wallet_id, role_id, created_at, updated_at
+            SELECT id, username, email, password_hash, pin_hash, first_name, last_name_paternal, last_name_maternal, birth_date, wallet_id, role_id, created_at, updated_at
             FROM users
             WHERE username = ?
             "#,
@@ -55,7 +56,7 @@ impl UserRepository {
         let user = sqlx::query_as!(
             User,
             r#"
-            SELECT id, username, email, password_hash, first_name, last_name_paternal, last_name_maternal, birth_date, wallet_id, role_id, created_at, updated_at
+            SELECT id, username, email, password_hash, pin_hash, first_name, last_name_paternal, last_name_maternal, birth_date, wallet_id, role_id, created_at, updated_at
             FROM users
             WHERE email = ?
             "#,
@@ -70,7 +71,7 @@ impl UserRepository {
         let user = sqlx::query_as!(
             User,
             r#"
-            SELECT id, username, email, password_hash, first_name, last_name_paternal, last_name_maternal, birth_date, wallet_id, role_id, created_at, updated_at
+            SELECT id, username, email, password_hash, pin_hash, first_name, last_name_paternal, last_name_maternal, birth_date, wallet_id, role_id, created_at, updated_at
             FROM users
             WHERE id = ?
             "#,

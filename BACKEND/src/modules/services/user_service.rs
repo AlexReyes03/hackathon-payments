@@ -47,8 +47,13 @@ impl UserService {
         }
 
         // Validate password length
-        if request.password.len() < 8 {
-            return Err(anyhow::anyhow!("Password must be at least 8 characters"));
+        if request.password.len() < 6 {
+            return Err(anyhow::anyhow!("Password must be at least 6 characters"));
+        }
+
+        // Validate PIN format (exactly 6 digits)
+        if request.pin.len() != 6 || !request.pin.chars().all(|c| c.is_numeric()) {
+            return Err(anyhow::anyhow!("PIN must be exactly 6 digits"));
         }
 
         // Validate birth date format (YYYY-MM-DD)
@@ -58,6 +63,10 @@ impl UserService {
         // Hash password
         let password_hash = hash(&request.password, DEFAULT_COST)
             .context("Failed to hash password")?;
+
+        // Hash PIN
+        let pin_hash = hash(&request.pin, DEFAULT_COST)
+            .context("Failed to hash PIN")?;
 
         // Create user
         let user_id = Uuid::new_v4().to_string();
@@ -77,6 +86,7 @@ impl UserService {
             username: request.username.clone(),
             email: request.email.clone(),
             password_hash,
+            pin_hash,
             first_name: request.first_name.clone(),
             last_name_paternal: request.last_name_paternal.clone(),
             last_name_maternal: request.last_name_maternal.clone(),
@@ -90,10 +100,6 @@ impl UserService {
         // Save user to database
         self.user_repo.create(&user).await
             .context("Failed to save user to database")?;
-
-        // Update wallet with user_id
-        // Note: This would require updating the wallet_repo, but for now we'll keep it simple
-        // and rely on the wallet_id in users table
 
         tracing::info!("Registered new user: {}", request.username);
 
@@ -114,18 +120,23 @@ impl UserService {
     pub async fn login(&self, request: LoginRequest) -> Result<LoginResponse> {
         // Find user by username
         let user = self.user_repo.find_by_username(&request.username).await?
-            .ok_or_else(|| anyhow::anyhow!("Invalid username or password"))?;
+            .ok_or_else(|| anyhow::anyhow!("Invalid credentials"))?;
 
-        // Verify password
-        verify(&request.password, &user.password_hash)
-            .map_err(|_| anyhow::anyhow!("Invalid username or password"))
-            .and_then(|valid| {
-                if valid {
-                    Ok(())
-                } else {
-                    Err(anyhow::anyhow!("Invalid username or password"))
-                }
-            })?;
+        // Verify either password or PIN
+        let is_valid = if let Some(password) = &request.password {
+            // Login with password
+            verify(password, &user.password_hash).unwrap_or(false)
+        } else if let Some(pin) = &request.pin {
+            // Login with PIN
+            verify(pin, &user.pin_hash).unwrap_or(false)
+        } else {
+            // Neither password nor PIN provided
+            return Err(anyhow::anyhow!("Password or PIN required"));
+        };
+
+        if !is_valid {
+            return Err(anyhow::anyhow!("Invalid credentials"));
+        }
 
         // Generate JWT token
         let token = self.generate_token(&user.id, &user.username, &user.role_id)?;
