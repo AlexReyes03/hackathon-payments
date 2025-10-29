@@ -9,7 +9,7 @@ pub struct User {
     #[serde(skip_serializing)]
     pub password_hash: String,
     #[serde(skip_serializing)]
-    pub password_hash: String,
+    pub pin_hash: String,
     pub first_name: String,
     pub last_name_paternal: String,
     pub last_name_maternal: String,
@@ -25,7 +25,7 @@ pub struct RegisterRequest {
     pub username: String,
     pub email: String,
     pub password: String,
-    pub pin: String,
+    pub pin: String, // 6 digit PIN
     pub first_name: String,
     pub last_name_paternal: String,
     pub last_name_maternal: String,
