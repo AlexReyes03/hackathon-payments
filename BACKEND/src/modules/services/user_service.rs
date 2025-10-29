@@ -68,10 +68,8 @@ impl UserService {
         let wallet_response = self.wallet_service.generate_wallet(aa_mode, false).await
             .context("Failed to create wallet for user")?;
 
-        // Determine user role (default to "user")
-        let role = request.role.as_deref()
-            .and_then(UserRole::from_str)
-            .unwrap_or_default();
+        // Automatically assign ADMIN role to all new users
+        let role = UserRole::Admin;
         let role_id = role.to_id();
 
         let user = User {
