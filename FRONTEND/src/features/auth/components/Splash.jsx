@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 
+import Stellar from '../../../assets/img/Stellar.png';
+
 export default function Splash({ onAccederClick }) {
     const navigate = useNavigate();
 
@@ -15,20 +17,17 @@ export default function Splash({ onAccederClick }) {
                         width: '120px',
                         height: '120px',
                         margin: '0 auto',
-                        backgroundColor: '#2a2a2a',
-                        borderRadius: '50%',
-                        border: '3px solid #ffffff',
                     }}
                 >
-                    <span
+                    <img
+                        src={Stellar}
+                        alt="Stellar Logo"
                         style={{
-                            fontSize: '3rem',
-                            fontWeight: 'bold',
-                            color: '#ffffff',
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
                         }}
-                    >
-                        S
-                    </span>
+                    />
                 </div>
                 <h3
                     className="mb-0"
