@@ -37,7 +37,6 @@ export default function Splash({ onAccederClick }) {
                         fontWeight: '600',
                     }}
                 >
-                    Stellar
                 </h3>
             </div>
 
