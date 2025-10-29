@@ -8,11 +8,13 @@ use crate::modules::services::{
     convert_service::ConvertService,
     reputation_service::ReputationService,
     stellar_service::StellarService,
+    user_service::UserService,
     wallet_service::WalletService,
 };
 use crate::modules::repositories::{
     bank_transfer_repo::BankTransferRepository,
     transaction_repo::TransactionRepository,
+    user_repo::UserRepository,
     wallet_repo::WalletRepository,
 };
 
@@ -27,6 +29,7 @@ pub struct AppState {
     pub reputation_service: Arc<ReputationService>,
     pub convert_service: Arc<ConvertService>,
     pub bank_service: Arc<BankService>,
+    pub user_service: Arc<UserService>,
 }
 
 impl AppState {
@@ -36,6 +39,7 @@ impl AppState {
         let wallet_repo = Arc::new(WalletRepository::new(db_pool.clone()));
         let transaction_repo = Arc::new(TransactionRepository::new(db_pool.clone()));
         let bank_transfer_repo = Arc::new(BankTransferRepository::new(db_pool.clone()));
+        let user_repo = Arc::new(UserRepository::new(db_pool.clone()));
 
         let aa_service = Arc::new(AaService::new());
         let stellar_service = Arc::new(StellarService::new(
@@ -66,6 +70,16 @@ impl AppState {
             reputation_service.clone(),
         ));
 
+        // JWT secret from environment or default
+        let jwt_secret = std::env::var("JWT_SECRET")
+            .unwrap_or_else(|_| "your-secret-key-change-in-production".to_string());
+        
+        let user_service = Arc::new(UserService::new(
+            user_repo.clone(),
+            wallet_service.clone(),
+            jwt_secret,
+        ));
+
         Self {
             config: config_arc,
             db_pool,
@@ -75,6 +89,7 @@ impl AppState {
             reputation_service,
             convert_service,
             bank_service,
+            user_service,
         }
     }
 }

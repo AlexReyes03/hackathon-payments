@@ -23,6 +23,9 @@ pub enum AppError {
     #[error("Invalid request: {0}")]
     BadRequest(String),
 
+    #[error("Unauthorized: {0}")]
+    Unauthorized(String),
+
     #[error("Account abstraction error: {0}")]
     AccountAbstractionError(String),
 
@@ -62,6 +65,9 @@ impl IntoResponse for AppError {
             }
             AppError::BadRequest(_) => {
                 (StatusCode::BAD_REQUEST, "BAD_REQUEST", self.to_string())
+            }
+            AppError::Unauthorized(_) => {
+                (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", self.to_string())
             }
             AppError::AccountAbstractionError(_) => {
                 (StatusCode::BAD_REQUEST, "AA_ERROR", self.to_string())
