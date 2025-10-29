@@ -98,6 +98,9 @@ DATABASE_URL=sqlite://./wallet.db
 SERVER_PORT=4000
 SERVER_HOST=0.0.0.0
 
+# JWT para autenticación de usuarios
+JWT_SECRET=mi_secreto_jwt_super_seguro_cambiar_en_produccion
+
 # Stellar
 STELLAR_NETWORK=testnet
 STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
@@ -127,6 +130,7 @@ cd BACKEND
 ```bash
 export DATABASE_URL="sqlite://./wallet.db"
 export SERVER_PORT=4000
+export JWT_SECRET="mi_secreto_jwt_super_seguro_cambiar_en_produccion"
 ```
 
 3. **Ejecutar migraciones:**
@@ -166,6 +170,83 @@ El frontend estará disponible en: `http://localhost:3000`
 - `GET /api/health` - Health check
 - `GET /api/admin/stats` - Estadísticas del sistema
 - `GET /api/admin/health-details` - Detalles del sistema
+
+### Autenticación de Usuarios 🔐
+
+#### Registro
+```bash
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "username": "usuario123",
+  "email": "usuario@example.com",
+  "password": "password123",
+  "first_name": "Juan",
+  "last_name_paternal": "Perez",
+  "last_name_maternal": "Garcia",
+  "birth_date": "1990-01-15",
+  "role": "user",        // Opcional: "admin", "user" (por defecto), "merchant"
+  "aa_mode": false       // Opcional: true para wallet AA, false (por defecto) para wallet regular
+}
+```
+
+**Respuesta exitosa:**
+```json
+{
+  "id": "uuid-del-usuario",
+  "username": "usuario123",
+  "email": "usuario@example.com",
+  "first_name": "Juan",
+  "last_name_paternal": "Perez",
+  "last_name_maternal": "Garcia",
+  "birth_date": "1990-01-15",
+  "wallet_id": "uuid-de-la-wallet",
+  "wallet_public_key": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "created_at": "2025-10-29 18:35:04"
+}
+```
+
+#### Login
+```bash
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "username": "usuario123",
+  "password": "password123"
+}
+```
+
+**Respuesta exitosa:**
+```json
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "user": {
+    "id": "uuid-del-usuario",
+    "username": "usuario123",
+    "email": "usuario@example.com",
+    "first_name": "Juan",
+    "last_name_paternal": "Perez",
+    "last_name_maternal": "Garcia",
+    "birth_date": "1990-01-15",
+    "wallet_id": "uuid-de-la-wallet",
+    "role_id": "role_user",
+    "created_at": "2025-10-29 18:35:04"
+  }
+}
+```
+
+**Roles disponibles:**
+- `admin` (role_id: `role_admin`) - Administrador con acceso completo
+- `user` (role_id: `role_user`) - Usuario regular (por defecto)
+- `merchant` (role_id: `role_merchant`) - Usuario comerciante
+
+**Características:**
+- Cada usuario obtiene automáticamente una wallet al registrarse
+- Las contraseñas se hashean con bcrypt
+- Los tokens JWT incluyen `user_id`, `username`, `role_id` y expiración (30 días)
+- La wallet puede ser regular o con Account Abstraction (AA)
 
 ### Wallets
 - `POST /api/wallet/generate` - Generar nueva wallet

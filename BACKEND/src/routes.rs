@@ -6,7 +6,7 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 
 use crate::modules::controllers::{
-    admin, bank, convert, health, reputation, wallet,
+    admin, bank, convert, health, reputation, user, wallet,
 };
 use crate::state::AppState;
 
@@ -18,6 +18,9 @@ pub fn create_router(state: AppState) -> Router {
 
     let api_routes = Router::new()
         .route("/health", get(health::health_check))
+        
+        .route("/auth/register", post(user::register))
+        .route("/auth/login", post(user::login))
         
         .route("/wallet/generate", post(wallet::generate_wallet))
         .route("/wallet/fund", post(wallet::fund_wallet))
