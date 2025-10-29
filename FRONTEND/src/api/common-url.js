@@ -1,0 +1,3 @@
+// API Base URL configuration
+// Update this URL when backend is deployed
+export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
