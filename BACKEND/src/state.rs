@@ -37,7 +37,7 @@ impl AppState {
         let transaction_repo = Arc::new(TransactionRepository::new(db_pool.clone()));
         let bank_transfer_repo = Arc::new(BankTransferRepository::new(db_pool.clone()));
 
-        let aa_service = Arc::new(AaService::new());
+    let aa_service = Arc::new(AaService::new(db_pool.clone()).await);
         let stellar_service = Arc::new(StellarService::new(
             config.stellar.horizon_url.clone(),
             config.stellar.friendbot_url.clone(),

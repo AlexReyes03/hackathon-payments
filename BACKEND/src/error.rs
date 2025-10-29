@@ -11,6 +11,9 @@ pub enum AppError {
     #[error("Wallet not found: {0}")]
     WalletNotFound(String),
 
+    #[error("Unauthorized: {0}")]
+    Unauthorized(String),
+
     #[error("Invalid public key format: {0}")]
     InvalidPublicKey(String),
 
@@ -50,6 +53,9 @@ impl IntoResponse for AppError {
         let (status, error_code, message) = match &self {
             AppError::WalletNotFound(_) => {
                 (StatusCode::NOT_FOUND, "WALLET_NOT_FOUND", self.to_string())
+            }
+            AppError::Unauthorized(_) => {
+                (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", self.to_string())
             }
             AppError::InvalidPublicKey(_) => {
                 (StatusCode::BAD_REQUEST, "INVALID_PUBLIC_KEY", self.to_string())
