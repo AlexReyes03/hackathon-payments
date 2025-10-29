@@ -16,12 +16,12 @@ export default function AppRouter() {
         <Routes> {/* Public Routes */}
             <Route element={<PublicRouter />}>
                 <Route path='' element={
-                    <AuthLayout title='Inicio de Sesión' subtitle='Ingresa tus credenciales'>
+                    <AuthLayout title='Inicio de Sesión' subtitle='Accede a tu cuenta'>
                         <LoginForm />
                     </AuthLayout>
                 }
                 />
-                <Route path='' element={
+                <Route path='/register' element={
                     <AuthLayout title='Inicio de Sesión' subtitle='Ingresa tus credenciales'>
                         <RegisterForm />
                     </AuthLayout>
