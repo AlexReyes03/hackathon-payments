@@ -625,10 +625,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ececcb659e7ba858fb4f10388c250a7252eb0a27373f1a72b8748afdd248e587"
 dependencies = [
  "powerfmt",
-<<<<<<< HEAD
  "serde_core",
-=======
->>>>>>> 0f0e199f84df6280cd60cf2cdc3e100446a3d562
 ]
 
 [[package]]
@@ -2935,7 +2932,7 @@ checksum = "12d2bf45e114117ea91d820a846fd1afbe3ba7d717988fee094ce8227a3bf8bd"
 dependencies = [
  "base32",
  "crate-git-revision",
- "thiserror",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -3535,9 +3532,9 @@ checksum = "5c1cb5db39152898a79168971543b1cb5020dff7fe43c8dc468b0885f5e29df5"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.20"
+version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "462eeb75aeb73aea900253ce739c8e18a67423fadf006037cd3ff27e82748a06"
+checksum = "602b1a9e6e672f7f8b95088d21f23f8349277e834a3a1570285e9e137e576834"
 
 [[package]]
 name = "unicode-normalization"
@@ -3665,11 +3662,8 @@ dependencies = [
  "anyhow",
  "axum",
  "base32",
-<<<<<<< HEAD
  "base64 0.21.7",
-=======
  "bcrypt",
->>>>>>> 0f0e199f84df6280cd60cf2cdc3e100446a3d562
  "chrono",
  "config",
  "dotenvy",

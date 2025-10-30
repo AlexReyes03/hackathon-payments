@@ -166,54 +166,124 @@ El frontend estará disponible en: `http://localhost:3000`
 
 ## 📡 API Endpoints
 
-### Health & Admin
-- `GET /api/health` - Health check
-- `GET /api/admin/stats` - Estadísticas del sistema
-- `GET /api/admin/health-details` - Detalles del sistema
+**Base URL (Desarrollo):** `http://localhost:4000/api`  
+**Base URL (Producción):** `http://YOUR_SERVER_IP:4000/api`
 
-### Autenticación de Usuarios 🔐
+---
 
-#### Registro
+## 🎯 Orden Recomendado para Probar
+
+1. ✅ **Health Check** - Verificar que el servidor responde
+2. 👤 **Register User** - Crear tu primer usuario (automáticamente crea una wallet)
+3. 🔐 **Login** - Obtener tu JWT token
+4. 💵 **Get Balance** - Ver el balance de tu wallet
+5. 💸 **Fund Wallet** - Fondear tu wallet en testnet
+6. 📤 **Send Transaction** - Enviar XLM a otra cuenta
+7. ⭐ **Get Reputation** - Ver tu score de reputación
+8. 💱 **Get Rates** - Ver tasas de cambio
+9. 💲 **Convert to USDC** - Convertir MXN a USDC
+
+---
+
+## 🏥 1. HEALTH CHECK
+
+### ✅ Health Check
+```http
+GET /api/health
+```
+
+**Respuesta:**
+```json
+{
+  "service": "wallet-backend",
+  "status": "ok",
+  "version": "0.1.0"
+}
+```
+
+**Ejemplo cURL:**
 ```bash
+curl http://localhost:4000/api/health
+```
+
+---
+
+## 👤 2. AUTENTICACIÓN DE USUARIOS
+
+### 📝 Registrar Usuario
+```http
 POST /api/auth/register
 Content-Type: application/json
 
 {
-  "username": "usuario123",
-  "email": "usuario@example.com",
+  "username": "juan_admin",
+  "email": "juan@example.com",
   "password": "password123",
+  "pin": "123456",
   "first_name": "Juan",
-  "last_name_paternal": "Perez",
-  "last_name_maternal": "Garcia",
-  "birth_date": "1990-01-15",
-  "role": "user",        // Opcional: "admin", "user" (por defecto), "merchant"
-  "aa_mode": false       // Opcional: true para wallet AA, false (por defecto) para wallet regular
+  "last_name_paternal": "Chavez",
+  "last_name_maternal": "Manuel",
+  "birth_date": "1995-06-15"
 }
 ```
 
 **Respuesta exitosa:**
 ```json
 {
-  "id": "uuid-del-usuario",
-  "username": "usuario123",
-  "email": "usuario@example.com",
-  "first_name": "Juan",
-  "last_name_paternal": "Perez",
-  "last_name_maternal": "Garcia",
-  "birth_date": "1990-01-15",
-  "wallet_id": "uuid-de-la-wallet",
-  "wallet_public_key": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  "created_at": "2025-10-29 18:35:04"
+  "user": {
+    "id": "uuid-del-usuario",
+    "username": "juan_admin",
+    "email": "juan@example.com",
+    "first_name": "Juan",
+    "last_name_paternal": "Chavez",
+    "last_name_maternal": "Manuel",
+    "birth_date": "1995-06-15",
+    "wallet_id": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "role_id": "ADMIN",
+    "created_at": "2025-10-30 18:35:04"
+  },
+  "message": "User registered successfully"
 }
 ```
 
-#### Login
+**Ejemplo cURL:**
 ```bash
+curl -X POST http://localhost:4000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "test_user",
+    "email": "test@example.com",
+    "password": "password123",
+    "pin": "123456",
+    "first_name": "Test",
+    "last_name_paternal": "User",
+    "last_name_maternal": "Demo",
+    "birth_date": "1995-06-15"
+  }'
+```
+
+**Características:**
+- ✅ Cada usuario obtiene automáticamente una wallet al registrarse
+- ✅ Todos los usuarios nuevos reciben el rol `ADMIN` por defecto
+- ✅ Las contraseñas se hashean con bcrypt (costo: 10)
+- ✅ El PIN se hashea con bcrypt para seguridad adicional
+- ✅ Validación de formato de fecha de nacimiento (YYYY-MM-DD)
+- ✅ Username y email deben ser únicos
+
+**Roles disponibles:**
+- `ADMIN` - Administrador con acceso completo (asignado automáticamente)
+- `USER` - Usuario regular
+- `MERCHANT` - Usuario comerciante
+
+---
+
+### 🔐 Login
+```http
 POST /api/auth/login
 Content-Type: application/json
 
 {
-  "username": "usuario123",
+  "username": "juan_admin",
   "password": "password123"
 }
 ```
@@ -224,44 +294,470 @@ Content-Type: application/json
   "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
   "user": {
     "id": "uuid-del-usuario",
-    "username": "usuario123",
-    "email": "usuario@example.com",
+    "username": "juan_admin",
+    "email": "juan@example.com",
     "first_name": "Juan",
-    "last_name_paternal": "Perez",
-    "last_name_maternal": "Garcia",
-    "birth_date": "1990-01-15",
-    "wallet_id": "uuid-de-la-wallet",
-    "role_id": "role_user",
-    "created_at": "2025-10-29 18:35:04"
+    "last_name_paternal": "Chavez",
+    "last_name_maternal": "Manuel",
+    "birth_date": "1995-06-15",
+    "wallet_id": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "role_id": "ADMIN",
+    "created_at": "2025-10-30 18:35:04"
   }
 }
 ```
 
-**Roles disponibles:**
-- `admin` (role_id: `role_admin`) - Administrador con acceso completo
-- `user` (role_id: `role_user`) - Usuario regular (por defecto)
-- `merchant` (role_id: `role_merchant`) - Usuario comerciante
+**Ejemplo cURL:**
+```bash
+curl -X POST http://localhost:4000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "test_user",
+    "password": "password123"
+  }'
+```
 
-**Características:**
-- Cada usuario obtiene automáticamente una wallet al registrarse
-- Las contraseñas se hashean con bcrypt
-- Los tokens JWT incluyen `user_id`, `username`, `role_id` y expiración (30 días)
-- La wallet puede ser regular o con Account Abstraction (AA)
+**JWT Claims incluye:**
+- `user_id`: ID único del usuario
+- `username`: Nombre de usuario
+- `role_id`: Rol del usuario (ADMIN, USER, MERCHANT)
+- `exp`: Expiración del token (30 días)
 
-### Wallets
-- `POST /api/wallet/generate` - Generar nueva wallet
-- `POST /api/wallet/fund` - Fondear wallet
+**Errores comunes:**
+```json
+// Usuario no encontrado
+{
+  "error": "User not found"
+}
 
-### Transferencias
-- `POST /api/bank/transfer` - Transferencia bancaria
-- `GET /api/bank/transfers/{wallet_id}` - Historial de transferencias
+// Contraseña incorrecta
+{
+  "error": "Invalid password"
+}
+```
 
-### Reputación
-- `GET /api/reputation/{public_key}` - Obtener score de reputación
-- `POST /api/reputation/calculate` - Recalcular reputación
+---
 
-### Conversión
-- `POST /api/convert` - Convertir entre monedas
+## 💰 3. WALLETS (BILLETERAS STELLAR)
+
+### 🔑 Generar Wallet
+```http
+POST /api/wallet/generate
+```
+
+**Respuesta:**
+```json
+{
+  "public_key": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "secret_key": "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl -X POST http://localhost:4000/api/wallet/generate
+```
+
+**⚠️ IMPORTANTE:** Guarda el `secret_key` de forma segura. No se puede recuperar después.
+
+---
+
+### 💸 Fondear Wallet (Solo Testnet)
+```http
+POST /api/wallet/fund
+Content-Type: application/json
+
+{
+  "public_key": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+}
+```
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "message": "Wallet funded successfully",
+  "transaction_id": "abc123..."
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl -X POST http://localhost:4000/api/wallet/fund \
+  -H "Content-Type: application/json" \
+  -d '{
+    "public_key": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  }'
+```
+
+**Nota:** Este endpoint usa el Friendbot de Stellar Testnet para fondear con 10,000 XLM.
+
+---
+
+### 💵 Ver Balance de Wallet
+```http
+GET /api/wallet/{public_key}/balance
+```
+
+**Respuesta:**
+```json
+{
+  "public_key": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "balances": [
+    {
+      "asset_type": "native",
+      "balance": "10000.0000000"
+    },
+    {
+      "asset_type": "credit_alphanum4",
+      "asset_code": "USDC",
+      "asset_issuer": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "balance": "500.0000000"
+    }
+  ],
+  "total_xlm": "10000.0000000"
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl http://localhost:4000/api/wallet/GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/balance
+```
+
+---
+
+### 📤 Enviar Transacción
+```http
+POST /api/wallet/{public_key}/send
+Content-Type: application/json
+
+{
+  "secret_key": "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "destination": "GDESTINATIONXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "amount": "100.50"
+}
+```
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "transaction_hash": "abc123...",
+  "ledger": 12345,
+  "source": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "destination": "GDESTINATIONXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "amount": "100.50"
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl -X POST http://localhost:4000/api/wallet/GXXX.../send \
+  -H "Content-Type: application/json" \
+  -d '{
+    "secret_key": "SXXX...",
+    "destination": "GDEST...",
+    "amount": "100.50"
+  }'
+```
+
+---
+
+## ⭐ 4. SISTEMA DE REPUTACIÓN
+
+### 📊 Ver Reputación de Usuario
+```http
+GET /api/reputation/{public_key}
+```
+
+**Respuesta:**
+```json
+{
+  "public_key": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "score": 85.5,
+  "total_transactions": 42,
+  "successful_transactions": 40,
+  "failed_transactions": 2,
+  "success_rate": 95.24,
+  "last_updated": "2025-10-30T18:35:04Z"
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl http://localhost:4000/api/reputation/GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+**Cálculo del Score:**
+- Base: 50 puntos
+- +1 punto por transacción exitosa
+- -5 puntos por transacción fallida
+- Rango: 0-100
+
+---
+
+## 💱 5. CONVERSIÓN DE DIVISAS
+
+### 💲 Convertir a USDC
+```http
+POST /api/convert/to-usdc
+Content-Type: application/json
+
+{
+  "from_currency": "MXN",
+  "amount": 1000.00
+}
+```
+
+**Respuesta:**
+```json
+{
+  "from_currency": "MXN",
+  "to_currency": "USDC",
+  "original_amount": 1000.00,
+  "converted_amount": 58.82,
+  "exchange_rate": 0.05882,
+  "timestamp": "2025-10-30T18:35:04Z"
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl -X POST http://localhost:4000/api/convert/to-usdc \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from_currency": "MXN",
+    "amount": 1000.00
+  }'
+```
+
+**Monedas soportadas:**
+- `MXN` - Peso Mexicano
+- `USD` - Dólar Estadounidense
+- `EUR` - Euro
+- `USDC` - USD Coin
+
+---
+
+### 📈 Ver Tasas de Cambio
+```http
+GET /api/rates
+```
+
+**Respuesta:**
+```json
+{
+  "base": "USDC",
+  "rates": {
+    "MXN": 17.00,
+    "USD": 1.00,
+    "EUR": 0.85
+  },
+  "timestamp": "2025-10-30T18:35:04Z"
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl http://localhost:4000/api/rates
+```
+
+---
+
+## 🏦 6. TRANSFERENCIAS BANCARIAS
+
+### 💳 Crear Transferencia
+```http
+POST /api/bank/transfer
+Content-Type: application/json
+
+{
+  "from_account": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "to_account": "GYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY",
+  "amount": 500.00,
+  "currency": "MXN",
+  "reference": "Pago de servicios",
+  "description": "Transferencia bancaria"
+}
+```
+
+**Respuesta:**
+```json
+{
+  "transfer_id": "uuid-transferencia",
+  "status": "pending",
+  "from_account": "GXXX...",
+  "to_account": "GYYY...",
+  "amount": 500.00,
+  "currency": "MXN",
+  "created_at": "2025-10-30T18:35:04Z"
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl -X POST http://localhost:4000/api/bank/transfer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from_account": "GXXX...",
+    "to_account": "GYYY...",
+    "amount": 500.00,
+    "currency": "MXN",
+    "reference": "Pago de servicios"
+  }'
+```
+
+---
+
+### 📋 Listar Transferencias (Admin)
+```http
+GET /api/admin/transfers
+```
+
+**Respuesta:**
+```json
+{
+  "transfers": [
+    {
+      "id": "uuid-1",
+      "from_account": "GXXX...",
+      "to_account": "GYYY...",
+      "amount": 500.00,
+      "currency": "MXN",
+      "status": "completed",
+      "created_at": "2025-10-30T18:35:04Z"
+    }
+  ],
+  "total": 42
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl http://localhost:4000/api/admin/transfers
+```
+
+---
+
+## 🔧 7. ENDPOINTS DE ADMINISTRACIÓN
+
+### 📊 Estadísticas del Sistema
+```http
+GET /api/admin/stats
+```
+
+**Respuesta:**
+```json
+{
+  "total_users": 150,
+  "total_wallets": 150,
+  "total_transactions": 1250,
+  "total_volume": "125000.00",
+  "active_users_24h": 45,
+  "system_health": "healthy"
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl http://localhost:4000/api/admin/stats
+```
+
+---
+
+### 🏥 Health Details (Admin)
+```http
+GET /api/admin/health-details
+```
+
+**Respuesta:**
+```json
+{
+  "status": "healthy",
+  "uptime_seconds": 3600,
+  "database": "connected",
+  "stellar_network": "testnet",
+  "horizon_status": "operational",
+  "memory_usage_mb": 125.5,
+  "cpu_usage_percent": 12.3
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl http://localhost:4000/api/admin/health-details
+```
+
+---
+
+### 🔐 Listar Cuentas AA (Account Abstraction)
+```http
+GET /api/admin/aa-accounts
+```
+
+**Respuesta:**
+```json
+{
+  "aa_accounts": [
+    {
+      "id": "uuid-1",
+      "public_key": "GXXX...",
+      "user_id": "uuid-user",
+      "created_at": "2025-10-30T18:35:04Z"
+    }
+  ],
+  "total": 25
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl http://localhost:4000/api/admin/aa-accounts
+```
+
+---
+
+## 🤖 8. ACCOUNT ABSTRACTION (AA)
+
+### 🚀 AA Relay Transaction
+```http
+POST /api/aa/relayer
+Content-Type: application/json
+
+{
+  "sponsor_secret": "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "user_pubkey": "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "destination": "GYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY",
+  "amount": "10.00"
+}
+```
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "transaction_hash": "abc123...",
+  "sponsor": "GXXX...",
+  "user": "GXXX...",
+  "destination": "GYYY...",
+  "amount": "10.00",
+  "gas_paid_by_sponsor": true
+}
+```
+
+**Ejemplo cURL:**
+```bash
+curl -X POST http://localhost:4000/api/aa/relayer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sponsor_secret": "SXXX...",
+    "user_pubkey": "GXXX...",
+    "destination": "GYYY...",
+    "amount": "10.00"
+  }'
+```
+
+**Nota:** El sponsor paga las fees de la transacción del usuario.
 
 ## 🧪 Testing
 
@@ -349,9 +845,69 @@ sqlx migrate info
 sqlx migrate run
 ```
 
+### Error: "table users has no column named pin_hash"
+
+Este error ocurre cuando la base de datos fue creada con una versión anterior del esquema. **Solución:**
+
+```bash
+# Eliminar la base de datos existente
+rm wallet.db
+
+# Recrear la base de datos
+sqlx database create
+
+# Aplicar todas las migraciones
+sqlx migrate run
+
+# Verificar que las migraciones se aplicaron correctamente
+sqlx migrate info
+```
+
+**⚠️ IMPORTANTE:** Esto eliminará todos los datos existentes. En producción, crear una migración adicional para agregar la columna.
+
+### Error: "error returned from database: no such table: users"
+
+Esto ocurre cuando `DATABASE_URL` no está configurado durante la compilación. **Solución:**
+
+```bash
+# Asegúrate de que DATABASE_URL esté configurado
+export DATABASE_URL="sqlite://./wallet.db"
+
+# Aplica las migraciones antes de compilar
+sqlx migrate run
+
+# Ahora compila
+cargo build --release
+```
+
+### Error: "failed to parse lock file at Cargo.lock"
+
+El archivo `Cargo.lock` está corrupto. **Solución:**
+
+```bash
+# Eliminar Cargo.lock
+rm Cargo.lock
+
+# Regenerar el archivo
+cargo build --release
+```
+
+### Error: Firewall bloqueando el puerto 4000
+
+En Google Cloud, necesitas abrir el puerto en el firewall:
+
+1. Ve a **VPC Network → Firewall** en Google Cloud Console
+2. Click en **"CREATE FIREWALL RULE"**
+3. Configura:
+   - **Name:** `allow-backend-4000`
+   - **Direction:** Ingress
+   - **Source IP ranges:** `0.0.0.0/0`
+   - **Protocols and ports:** `tcp:4000`
+4. Click **"CREATE"**
+
 ## 🚀 Despliegue
 
-### Desarrollo
+### Desarrollo Local
 ```bash
 # Backend
 cd BACKEND && cargo run
@@ -360,13 +916,183 @@ cd BACKEND && cargo run
 cd FRONTEND/hackathon && npm run dev
 ```
 
-### Producción
-```bash
-# Backend
-cd BACKEND && cargo run --release
+### Google Cloud VM (Producción)
 
-# Frontend
-cd FRONTEND/hackathon && npm run build && npm run start
+#### 1. Crear VM en Google Cloud Console
+
+**Características recomendadas:**
+- **Tipo de máquina:** e2-medium (2 vCPUs, 4 GB RAM)
+- **Sistema operativo:** Ubuntu 22.04 LTS o superior
+- **Disco de arranque:** 10 GB SSD persistente
+- **Firewall:**
+  - ☑️ Permitir tráfico HTTP
+  - ☑️ Permitir tráfico HTTPS
+  - Agregar regla personalizada para puerto 4000 (backend)
+  - Agregar regla personalizada para puerto 5173 (frontend Vite)
+
+#### 2. Conectar a la VM
+
+```bash
+# Desde Google Cloud Console, usar SSH en el navegador
+# O desde tu terminal:
+gcloud compute ssh [NOMBRE-INSTANCIA] --zone [ZONA]
+```
+
+#### 3. Instalar dependencias en la VM
+
+```bash
+# Actualizar el sistema
+sudo apt update && sudo apt upgrade -y
+
+# Instalar Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+
+# Instalar SQLx CLI
+cargo install sqlx-cli --no-default-features --features sqlite
+
+# Instalar Node.js (para frontend)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Instalar Git
+sudo apt install -y git
+```
+
+#### 4. Clonar y configurar el proyecto
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/TU_USUARIO/hackathon-payments.git
+cd hackathon-payments
+
+# Ir al directorio del backend
+cd BACKEND
+
+# Configurar variables de entorno
+export DATABASE_URL="sqlite://./wallet.db"
+export JWT_SECRET="tu_secreto_jwt_super_seguro_produccion_cambiar_este_valor"
+export SERVER_PORT=4000
+
+# Crear y migrar la base de datos
+sqlx database create
+sqlx migrate run
+```
+
+#### 5. Compilar en modo release
+
+```bash
+# Desde BACKEND/
+cargo build --release
+```
+
+**Nota:** La primera compilación puede tardar 10-15 minutos.
+
+#### 6. Ejecutar el backend en producción
+
+```bash
+# Ejecutar en segundo plano con nohup
+nohup cargo run --release > ~/backend.log 2>&1 &
+
+# Ver logs en tiempo real
+tail -f ~/backend.log
+
+# Detener el proceso si es necesario
+ps aux | grep wallet-backend
+kill [PID]
+```
+
+#### 7. Configurar Firewall en Google Cloud
+
+1. Ve a **VPC Network → Firewall** en Google Cloud Console
+2. Crea las siguientes reglas:
+
+**Regla para Backend (Puerto 4000):**
+```
+Name: allow-backend-4000
+Direction: Ingress
+Targets: All instances in the network
+Source IP ranges: 0.0.0.0/0
+Protocols and ports: tcp:4000
+```
+
+**Regla para Frontend (Puerto 5173):**
+```
+Name: allow-frontend-5173
+Direction: Ingress
+Targets: All instances in the network
+Source IP ranges: 0.0.0.0/0
+Protocols and ports: tcp:5173
+```
+
+#### 8. Verificar el despliegue
+
+```bash
+# Obtener la IP externa de tu VM
+curl ifconfig.me
+
+# Probar el endpoint de health
+curl http://[IP-EXTERNA]:4000/api/health
+
+# Deberías ver:
+# {"service":"wallet-backend","status":"ok","version":"0.1.0"}
+```
+
+#### 9. Actualizar el código en la VM
+
+```bash
+cd ~/hackathon-payments
+git pull origin main
+
+cd BACKEND
+cargo build --release
+
+# Reiniciar el servidor
+ps aux | grep wallet-backend
+kill [PID]
+nohup cargo run --release > ~/backend.log 2>&1 &
+```
+
+#### 10. (Opcional) Configurar servicio systemd
+
+Para que el backend se inicie automáticamente al reiniciar la VM:
+
+```bash
+# Crear archivo de servicio
+sudo nano /etc/systemd/system/hackathon-backend.service
+```
+
+Contenido del archivo:
+```ini
+[Unit]
+Description=Hackathon Backend Service
+After=network.target
+
+[Service]
+Type=simple
+User=TU_USUARIO
+WorkingDirectory=/home/TU_USUARIO/hackathon-payments/BACKEND
+Environment="DATABASE_URL=sqlite://./wallet.db"
+Environment="JWT_SECRET=tu_secreto_jwt_super_seguro"
+Environment="SERVER_PORT=4000"
+ExecStart=/home/TU_USUARIO/.cargo/bin/cargo run --release
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+# Activar el servicio
+sudo systemctl daemon-reload
+sudo systemctl enable hackathon-backend
+sudo systemctl start hackathon-backend
+
+# Ver estado
+sudo systemctl status hackathon-backend
+
+# Ver logs
+sudo journalctl -u hackathon-backend -f
 ```
 
 ## 📝 Notas de Desarrollo
