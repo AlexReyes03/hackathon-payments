@@ -1,9 +1,12 @@
 use anyhow::{Context, Result};
 use std::sync::Arc;
-use bcrypt::{hash, verify, DEFAULT_COST};
+use bcrypt::{hash, verify};
 use jsonwebtoken::{encode, decode, Header, Algorithm, EncodingKey, DecodingKey, Validation};
 use chrono::Utc;
 use uuid::Uuid;
+
+// Use cost 10 for better compatibility across different systems
+const BCRYPT_COST: u32 = 10;
 
 use crate::modules::models::user::{User, RegisterRequest, RegisterResponse, LoginRequest, LoginResponse, UserResponse, Claims};
 use crate::modules::models::role::UserRole;
