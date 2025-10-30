@@ -1,29 +1,51 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { InputMask } from 'primereact/inputmask';
 import { Button } from 'primereact/button';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginPin({ username, onSubmit, onSwitchAccount, loading }) {
     const [pin, setPin] = useState('');
     const [error, setError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setIsSubmitting(true);
 
         if (pin.length !== 6) {
             setError('El PIN debe tener 6 digitos');
+            setIsSubmitting(false);
             return;
         }
+
+        // Esperar un momento para que se vea la animación
+        await new Promise(resolve => setTimeout(resolve, 400));
 
         try {
             await onSubmit({ username, pin });
         } catch (err) {
             setError(err.message || 'PIN incorrecto');
+            setIsSubmitting(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="d-flex flex-column gap-4">
+        <AnimatePresence>
+            {!isSubmitting && (
+                <motion.form
+                    onSubmit={handleSubmit}
+                    className="d-flex flex-column gap-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{
+                        opacity: 0,
+                        scale: 0.95,
+                        y: -20,
+                        transition: { duration: 0.4, ease: "easeInOut" }
+                    }}
+                    transition={{ duration: 0.5 }}
+                >
             <div className="text-center mb-3">
                 <p className="mb-2" style={{ color: '#cccccc', fontSize: '0.95rem' }}>
                     Bienvenido de nuevo
@@ -94,6 +116,8 @@ export default function LoginPin({ username, onSubmit, onSwitchAccount, loading 
                     Iniciar con otra cuenta
                 </button>
             </div>
-        </form>
+                </motion.form>
+            )}
+        </AnimatePresence>
     );
 }

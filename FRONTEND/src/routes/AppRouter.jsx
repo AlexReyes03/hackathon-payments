@@ -12,6 +12,8 @@ import RegisterForm from '../features/auth/RegisterForm'
 import AdminDashboard from '../features/admin/UserDashboard';
 import Profile from '../features/admin/Profile';
 import Movements from '../features/admin/Movements';
+import TransferStep2 from '../features/admin/TransferStep2';
+import TransferStep3 from '../features/admin/TransferStep3';
 
 export default function AppRouter() {
     return (
@@ -44,6 +46,13 @@ export default function AppRouter() {
                     <Route path='admin/movements' element={<Movements />} />
                 </Route>
                 
+                <Route element={<AppLayout />}>
+                    <Route path='admin/transfer2' element={<TransferStep2 />} />
+                </Route>
+
+                <Route element={<AppLayout />}>
+                    <Route path='admin/transfer3' element={<TransferStep3 />} />
+                </Route>
             </Route>
 
             {/* Private Routes 
