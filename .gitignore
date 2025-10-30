@@ -219,10 +219,17 @@ $RECYCLE.BIN/
 
 # PostgreSQL
 *.dump
-*.sql
+# *.sql  # COMMENTED: We need SQL migration files in Git
 
 # MySQL
-*.sql
+# *.sql  # COMMENTED: We need SQL migration files in Git
+
+# BUT DO ignore database dumps and backups
+*.sql.gz
+*.sql.bak
+*.sql.backup
+backup*.sql
+dump*.sql
 
 # ===========================================
 # SECURITY & SECRETS
