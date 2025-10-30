@@ -18,7 +18,7 @@ function AppContent() {
 
 export default function App() {
   return (
-    <BrowserRouter basename="/ezPayments">
+    <BrowserRouter basename="/">
       <AuthProvider>
         <AppContent />
       </AuthProvider>
