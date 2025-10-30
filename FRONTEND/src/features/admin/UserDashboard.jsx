@@ -9,7 +9,7 @@ export default function UserDashboard() {
 
   // Mock data - Replace with real data from API
   const balanceData = {
-    balance: 34378.00,
+    balance: 34378.0,
     percentage: 12.4,
   };
 
@@ -17,7 +17,7 @@ export default function UserDashboard() {
     name: 'Bitcoin',
     amount: '0.015',
     amountLabel: 'Cantidad en BTC',
-    estimatedValue: 30200.00,
+    estimatedValue: 30200.0,
     pricePerUnit: 2080552.38,
     percentage: 3.4,
   };
@@ -55,23 +55,16 @@ export default function UserDashboard() {
     </svg>
   );
 
-  const username = user?.first_name
-    ? `${user.first_name} ${user.last_name_paternal}`
-    : user?.username || 'Usuario';
+  const username = user?.first_name ? `${user.first_name} ${user.last_name_paternal}` : user?.username || 'Usuario';
 
   return (
-    <div className="pb-5" style={{ backgroundColor: '#181A1B', minHeight: '100vh' }}>
+    <div style={{ paddingBottom: '100px' }}>
       {/* Section: Tu Cuenta */}
       <div className="mb-3">
         <h6 className="text-white mb-3" style={{ fontSize: '0.95rem', fontWeight: '500' }}>
           Tu Cuenta
         </h6>
-        <BalanceCard
-          balance={balanceData.balance}
-          percentage={balanceData.percentage}
-          username={username}
-          onBuyClick={handleBuyClick}
-        />
+        <BalanceCard balance={balanceData.balance} percentage={balanceData.percentage} username={username} onBuyClick={handleBuyClick} />
       </div>
 
       {/* Section: Tus Activos */}
@@ -101,11 +94,7 @@ export default function UserDashboard() {
           <div className="row g-4" style={{ maxWidth: '400px' }}>
             {services.map((service, index) => (
               <div key={index} className="col-3">
-                <ServiceButton
-                  icon={service.icon}
-                  label={service.label}
-                  onClick={service.onClick}
-                />
+                <ServiceButton icon={service.icon} label={service.label} onClick={service.onClick} />
               </div>
             ))}
           </div>

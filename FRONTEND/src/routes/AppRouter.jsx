@@ -15,6 +15,9 @@ import Movements from '../features/admin/Movements';
 import TransferPage from '../features/admin/TransferPage';
 import TransferStep2 from '../features/admin/TransferStep2';
 import TransferStep3 from '../features/admin/TransferStep3';
+import TransferSuccess from '../features/admin/TransferSuccess';
+import Credits from '../features/admin/Credits';
+import Notifications from '../features/admin/Notifications';
 
 export default function AppRouter() {
     return (
@@ -41,10 +44,14 @@ export default function AppRouter() {
                     <Route path='admin/dashboard' element={<AdminDashboard />} />
                     <Route path='admin/movements' element={<Movements />} />
                     <Route path='admin/transfer' element={<TransferPage />} />
-                    <Route path='admin/transfer3' element={<TransferStep3 />} />
-                    <Route path='admin/transfer2' element={<TransferStep2 />} />
-                    <Route path='admin/credits' element={<TransferPage />} />
+                    <Route path='admin/transfer-step2' element={<TransferStep2 />} />
+                    <Route path='admin/transfer-step3' element={<TransferStep3 />} />
+                    <Route path='admin/transfer-success' element={<TransferSuccess />} />
+                    
+                    <Route path='admin/credits' element={<Credits />} />
                     <Route path='admin/profile' element={<Profile />} />
+
+                    <Route path='admin/notifications' element={<Notifications />} />
                 </Route>
             </Route>
         </Routes>

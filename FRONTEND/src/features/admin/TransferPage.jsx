@@ -17,16 +17,16 @@ export default function TransferPage() {
   };
 
   const contacts = [
-    { id: 1, name: 'Juan' },
-    { id: 2, name: 'Alejandro' },
-    { id: 3, name: 'Josef' },
-    { id: 4, name: 'Jafet' },
-    { id: 5, name: 'Maria' },
-    { id: 6, name: 'Carlos' },
-    { id: 7, name: 'Ana' },
-    { id: 8, name: 'Pedro' },
-    { id: 9, name: 'Sofia' },
-    { id: 10, name: 'Luis' },
+    { id: 1, name: 'Juan', initials: 'JU', color: '#ef4444' },
+    { id: 2, name: 'Alejandro', initials: 'AL', color: '#3b82f6' },
+    { id: 3, name: 'Josef', initials: 'JO', color: '#10b981' },
+    { id: 4, name: 'Jafet', initials: 'JF', color: '#f59e0b' },
+    { id: 5, name: 'Maria', initials: 'MA', color: '#ec4899' },
+    { id: 6, name: 'Carlos', initials: 'CA', color: '#8b5cf6' },
+    { id: 7, name: 'Ana', initials: 'AN', color: '#06b6d4' },
+    { id: 8, name: 'Pedro', initials: 'PE', color: '#f97316' },
+    { id: 9, name: 'Sofia', initials: 'SO', color: '#a855f7' },
+    { id: 10, name: 'Luis', initials: 'LU', color: '#14b8a6' },
   ];
 
   const transactions = [
@@ -74,11 +74,33 @@ export default function TransferPage() {
   };
 
   const handleTransferToAccount = () => {
-    console.log('Transferir a cuenta o tarjeta');
+    navigate('/admin/transfer-step2', {
+      state: {
+        recipient: {
+          name: 'Cuenta o Tarjeta',
+          account: 'Banco',
+          initials: 'BA',
+          color: '#00d084',
+        },
+        balance: balanceData.balance,
+        username: username,
+      },
+    });
   };
 
   const handleContactClick = (contact) => {
-    console.log('Contact clicked:', contact);
+    navigate('/admin/transfer-step2', {
+      state: {
+        recipient: {
+          name: contact.name,
+          account: `Cuenta **** ${Math.floor(1000 + Math.random() * 9000)}`,
+          initials: contact.initials,
+          color: contact.color,
+        },
+        balance: balanceData.balance,
+        username: username,
+      },
+    });
   };
 
   const handleTransactionClick = (transaction) => {
@@ -86,11 +108,11 @@ export default function TransferPage() {
   };
 
   const handleViewAll = () => {
-    console.log('Ver todas las transacciones');
+    navigate('/admin/movements');
   };
 
   return (
-    <div className="pb-5" style={{ backgroundColor: '#181A1B', minHeight: '100vh' }}>
+    <div style={{ paddingBottom: '100px' }}>
       {/* Section: Tu Billetera */}
       <div className="mb-4">
         <h6 className="text-white mb-3" style={{ fontSize: '0.95rem', fontWeight: '500' }}>
@@ -99,10 +121,10 @@ export default function TransferPage() {
         <BalanceCard balance={balanceData.balance} percentage={balanceData.percentage} username={username} onBuyClick={handleBuyClick} />
       </div>
 
-      {/* Section: Transferir Rápidamente */}
+      {/* Section: Transferir Rapidamente */}
       <div className="mb-4">
         <h6 className="text-white mb-3" style={{ fontSize: '0.95rem', fontWeight: '500' }}>
-          Transferir Rápidamente
+          Transferir Rapidamente
         </h6>
 
         {/* Search and Add */}
@@ -205,11 +227,11 @@ export default function TransferPage() {
         <ContactCarousel contacts={contacts} onContactClick={handleContactClick} />
       </div>
 
-      {/* Section: Últimas Transferencias */}
+      {/* Section: Ultimas Transferencias */}
       <div className="mb-3">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h6 className="text-white mb-0" style={{ fontSize: '0.95rem', fontWeight: '500' }}>
-            Últimas Transferencias
+            Ultimas Transferencias
           </h6>
           <button
             onClick={handleViewAll}
@@ -241,7 +263,7 @@ export default function TransferPage() {
                     {group.date}
                   </span>
                   <span className="text-white-50" style={{ fontSize: '0.85rem' }}>
-                    Saldo del día $100,000
+                    Saldo del dia $100,000
                   </span>
                 </div>
               </div>
