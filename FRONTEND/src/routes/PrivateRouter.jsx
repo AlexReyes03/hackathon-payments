@@ -9,7 +9,7 @@ export default function PrivateRouter({ allowedRoles }) {
         return <Navigate to='/' state={{ from: location }} replace />;
     }
 
-    if (allowedRoles && !allowedRoles.includes(user.role.name)) {
+    if (allowedRoles && !allowedRoles.includes(user.role_id)) {
         return <Navigate to='/' replace />;
     }
 

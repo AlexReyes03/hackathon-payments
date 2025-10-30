@@ -31,37 +31,20 @@ export default function AppRouter() {
                     </AuthLayout>
                 }
                 />
-            
-
-
-                <Route element={<AppLayout />}>
-                    <Route path='admin/dashboard' element={<AdminDashboard />} />
-                </Route>
-
-                <Route element={<AppLayout />}>
-                    <Route path='admin/profile' element={<Profile />} />
-                </Route>
-
-                <Route element={<AppLayout />}>
-                    <Route path='admin/movements' element={<Movements />} />
-                </Route>
-                
-                <Route element={<AppLayout />}>
-                    <Route path='admin/transfer2' element={<TransferStep2 />} />
-                </Route>
-
-                <Route element={<AppLayout />}>
-                    <Route path='admin/transfer3' element={<TransferStep3 />} />
-                </Route>
             </Route>
 
-            {/* Private Routes 
+            {/* Private Routes */}
             <Route element={<PrivateRouter allowedRoles={['ADMIN']} />}>
                 <Route element={<AppLayout />}>
-                    {/* Admin Routes
+                    {/* Admin Routes */}
+                    <Route path='admin/dashboard' element={<AdminDashboard />} />
+                    <Route path='admin/transfer3' element={<TransferStep3 />} />
+                    <Route path='admin/transfer2' element={<TransferStep2 />} />
+                    <Route path='admin/movements' element={<Movements />} />
+                    <Route path='admin/profile' element={<Profile />} />
                     <Route path='admin/dashboard' element={<AdminDashboard />} />
                 </Route>
-            </Route>*/}
+            </Route>
         </Routes>
 
 

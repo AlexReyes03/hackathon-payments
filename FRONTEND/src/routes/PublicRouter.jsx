@@ -6,9 +6,19 @@ export default function PublicRouter() {
 
     if (user) {
         let redirectTo = '/';
-        switch (user.role.name) {
-            case 'ADMIN': redirectTo = '/admin/dashboard'; break;
+        
+        // CORREGIDO: usar role_id en lugar de role.name
+        switch (user.role_id) {
+            case 'ADMIN': 
+                redirectTo = '/admin/dashboard'; 
+                break;
+            case 'USER':
+                redirectTo = '/user/dashboard';
+                break;
+            default:
+                redirectTo = '/';
         }
+        
         return <Navigate to={redirectTo} replace />;
     }
 
