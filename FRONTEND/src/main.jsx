@@ -13,6 +13,7 @@ import 'primereact/resources/themes/lara-light-cyan/theme.css';
 import 'primeicons/primeicons.css';
 
 // Styles
+import './styles/animations.css';
 
 PrimeReact.ripple = true;
 PrimeReact.autoZIndex = true;

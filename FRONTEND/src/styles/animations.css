@@ -1,0 +1,236 @@
+/* ============================================
+   ANIMACIONES GLOBALES PARA EL DASHBOARD
+   ============================================ */
+
+/* Animación de slide up con fade in */
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animación de fade in simple */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Animación de fade out */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* Animación de pulse (escala) */
+@keyframes pulseScale {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Animación de fade in/out suave (para textos de carga) */
+@keyframes fadeInOut {
+    0%, 100% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Animación de spinner rotativo */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Animación de slide desde la izquierda */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animación de slide desde la derecha */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animación de bounce suave */
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Animación de shake (para errores) */
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+    }
+}
+
+/* ============================================
+   CLASES DE UTILIDAD PARA ANIMACIONES
+   ============================================ */
+
+.animate-slide-up {
+    animation: slideUpFade 0.6s ease-out forwards;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+.animate-fade-out {
+    animation: fadeOut 0.5s ease-in-out forwards;
+}
+
+.animate-pulse {
+    animation: pulseScale 2s ease-in-out infinite;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+.animate-bounce {
+    animation: bounceIn 0.6s ease-out forwards;
+}
+
+.animate-shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* ============================================
+   TRANSICIONES SUAVES
+   ============================================ */
+
+.smooth-transition {
+    transition: all 0.3s ease-in-out;
+}
+
+.smooth-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Card con efecto hover */
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(250, 184, 0, 0.2);
+}
+
+/* ============================================
+   ANIMACIONES ESPECIALES PARA CARDS
+   ============================================ */
+
+.card-slide-up {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: slideUpFade 0.6s ease-out forwards;
+}
+
+/* Delay escalonado para múltiples elementos */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+.stagger-7 { animation-delay: 0.7s; }
+.stagger-8 { animation-delay: 0.8s; }
+
+/* ============================================
+   ANIMACIONES DE PÁGINA
+   ============================================ */
+
+.page-enter {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+.page-exit {
+    animation: fadeOut 0.3s ease-in-out;
+}
+
+/* ============================================
+   EFECTOS DE GLOW (BRILLO)
+   ============================================ */
+
+.glow-yellow {
+    box-shadow: 0 0 10px rgba(250, 184, 0, 0.5),
+                0 0 20px rgba(250, 184, 0, 0.3);
+}
+
+.glow-purple {
+    box-shadow: 0 0 10px rgba(112, 63, 181, 0.5),
+                0 0 20px rgba(112, 63, 181, 0.3);
+}
+
+/* Glow pulsante */
+@keyframes glowPulse {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(250, 184, 0, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(250, 184, 0, 0.8),
+                    0 0 30px rgba(250, 184, 0, 0.5);
+    }
+}
+
+.glow-pulse {
+    animation: glowPulse 2s ease-in-out infinite;
+}
