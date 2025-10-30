@@ -3,7 +3,7 @@ import request from '../fetchWrapper';
 class WalletService {
   async getBalance(publicKey) {
     try {
-      const response = await request(`/api/wallet/${publicKey}/balance`);
+      const response = await request(`/wallet/${publicKey}/balance`);
       return {
         balances: response.balances || [],
         recentTransactions: response.recent_transactions || [],
@@ -16,7 +16,7 @@ class WalletService {
 
   async fundWallet(publicKey) {
     try {
-      const response = await request('/api/wallet/fund', {
+      const response = await request('/wallet/fund', {
         method: 'POST',
         body: { public_key: publicKey },
       });
@@ -29,7 +29,7 @@ class WalletService {
 
   async sendTransaction(publicKey, destination, amount, assetCode = null) {
     try {
-      const response = await request(`/api/wallet/${publicKey}/send`, {
+      const response = await request(`/wallet/${publicKey}/send`, {
         method: 'POST',
         body: {
           destination,

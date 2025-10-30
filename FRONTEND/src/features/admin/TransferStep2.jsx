@@ -12,19 +12,22 @@ export default function TransferStep2() {
   const [accountType, setAccountType] = useState('cuenta');
   const [bankName, setBankName] = useState('');
   const [holderName, setHolderName] = useState('');
+  const [ezpayUsername, setEzpayUsername] = useState('');
 
   const recipient = location.state?.recipient || {
     name: 'Receptor',
     account: 'Cuenta',
     initials: 'RE',
     color: '#a855f7',
+    type: 'bank',
   };
 
   const balance = location.state?.balance || 0;
   const username = location.state?.username || 'Usuario';
   const publicKey = location.state?.publicKey;
 
-  const isAccountTransfer = recipient.name === 'Cuenta o Tarjeta' && recipient.account === 'Banco';
+  const isAccountTransfer = recipient.type === 'bank' && recipient.name === 'Cuenta o Tarjeta';
+  const isEzPayUserTransfer = recipient.type === 'ezpay_user' && recipient.name === 'Usuario EzPay';
 
   const accountTypes = [
     { label: 'Cuenta', value: 'cuenta' },
@@ -32,13 +35,15 @@ export default function TransferStep2() {
   ];
 
   useEffect(() => {
-    if (!isAccountTransfer && recipient.accountNumber) {
+    if (recipient.type === 'ezpay_user' && recipient.username) {
+      setEzpayUsername(recipient.username);
+    } else if (!isAccountTransfer && !isEzPayUserTransfer && recipient.accountNumber) {
       setAccountNumber(recipient.accountNumber);
       setAccountType(recipient.accountType || 'cuenta');
       setBankName(recipient.bankName || '');
       setHolderName(recipient.name);
     }
-  }, [recipient, isAccountTransfer]);
+  }, [recipient, isAccountTransfer, isEzPayUserTransfer]);
 
   const handleNumberClick = (num) => {
     if (amount === '0') {
@@ -76,6 +81,16 @@ export default function TransferStep2() {
           accountNumber: accountNumber,
           accountType: accountType,
           bankName: bankName,
+          type: 'bank',
+        };
+      } else if (isEzPayUserTransfer && ezpayUsername) {
+        finalRecipient = {
+          name: `@${ezpayUsername}`,
+          account: 'Usuario EzPay',
+          initials: ezpayUsername.substring(0, 2).toUpperCase(),
+          color: '#ffc107',
+          username: ezpayUsername,
+          type: 'ezpay_user',
         };
       }
 
@@ -93,8 +108,15 @@ export default function TransferStep2() {
 
   const numericAmount = parseFloat(amount) || 0;
   const isValidAmount = numericAmount > 0 && numericAmount <= balance;
-  const isAccountDataValid = !isAccountTransfer || (accountNumber && holderName && bankName);
-  const canContinue = isValidAmount && isAccountDataValid;
+  
+  let isDataValid = true;
+  if (isAccountTransfer) {
+    isDataValid = accountNumber && holderName && bankName;
+  } else if (isEzPayUserTransfer) {
+    isDataValid = ezpayUsername;
+  }
+  
+  const canContinue = isValidAmount && isDataValid;
 
   return (
     <div
@@ -155,7 +177,50 @@ export default function TransferStep2() {
           Ingresa el monto
         </h3>
 
-        {isAccountTransfer ? (
+        {isEzPayUserTransfer ? (
+          <div className="mb-4">
+            <div className="mb-3">
+              <label
+                style={{
+                  color: '#ffffff',
+                  fontSize: '0.9rem',
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                Nombre de usuario
+              </label>
+              <div className="input-group">
+                <span
+                  className="input-group-text"
+                  style={{
+                    backgroundColor: '#2a2a2a',
+                    border: '1px solid #3a3a3a',
+                    borderRadius: '12px 0 0 12px',
+                    color: '#ffffff',
+                  }}
+                >
+                  @
+                </span>
+                <InputText
+                  value={ezpayUsername}
+                  onChange={(e) => setEzpayUsername(e.target.value)}
+                  placeholder="usuario123"
+                  className="flex-grow-1"
+                  style={{
+                    backgroundColor: '#2a2a2a',
+                    border: '1px solid #3a3a3a',
+                    borderLeft: 'none',
+                    borderRadius: '0 12px 12px 0',
+                    padding: '0.75rem 1rem',
+                    color: '#ffffff',
+                    fontSize: '0.95rem',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        ) : isAccountTransfer ? (
           <div className="mb-4">
             <div className="mb-3">
               <label
@@ -201,7 +266,7 @@ export default function TransferStep2() {
               <InputText
                 value={holderName}
                 onChange={(e) => setHolderName(e.target.value)}
-                placeholder="Ej: Juan Pérez"
+                placeholder="Ej: Juan Perez"
                 className="w-100"
                 style={{
                   backgroundColor: '#2a2a2a',
@@ -223,7 +288,7 @@ export default function TransferStep2() {
                   marginBottom: '0.5rem',
                 }}
               >
-                Número de {accountType === 'cuenta' ? 'cuenta' : 'tarjeta'}
+                Numero de {accountType === 'cuenta' ? 'cuenta' : 'tarjeta'}
               </label>
               <InputText
                 value={accountNumber}

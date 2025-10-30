@@ -4,12 +4,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import BalanceCard from './components/BalanceCard';
 import ContactCarousel from './components/ContactCarousel';
 import TransactionItem from './components/TransactionItem';
-
 import AddAccountModal from './components/AddAccountModal';
+import contactService from '../../api/financial/contactService';
 import walletService from '../../api/financial/walletService';
 import convertService from '../../api/financial/convertService';
 import bankService from '../../api/financial/bankService';
-import contactService from '../../api/financial/contactService';
+import userTransferService from '../../api/financial/userTransferService';
 
 export default function TransferPage() {
   const { user } = useAuth();
@@ -33,13 +33,6 @@ export default function TransferPage() {
     console.log('User:', user);
     console.log('Public Key:', publicKey);
 
-    if (!publicKey) {
-      console.warn('No public key found, skipping load');
-      setLoading(false);
-      setError('No se encontró la clave pública de la billetera');
-      return;
-    }
-
     loadData();
   }, [publicKey]);
 
@@ -49,14 +42,10 @@ export default function TransferPage() {
     setError(null);
 
     try {
-      // Load contacts from localStorage (sync operation)
-      console.log('Loading contacts...');
       const loadedContacts = contactService.getAllContacts();
       console.log('Contacts loaded:', loadedContacts);
       setContacts(loadedContacts);
 
-      // Try to load balance
-      console.log('Fetching balance for:', publicKey);
       let totalMXN = 0;
       try {
         const balanceResponse = await walletService.getBalance(publicKey);
@@ -68,27 +57,33 @@ export default function TransferPage() {
         }
       } catch (balanceError) {
         console.error('Error fetching balance:', balanceError);
-        // Don't fail completely, just use 0 balance
       }
-
+      
       setBalanceData({
         balance: totalMXN,
-        percentage: 12.4, // Mock percentage for now
+        percentage: 12.4,
       });
 
-      // Try to load transfers
-      console.log('Fetching transfers...');
-      try {
-        const transfersResponse = await bankService.listTransfers();
-        console.log('Transfers response:', transfersResponse);
+      const bankTransfers = bankService.listTransfers();
+      const userTransfers = userTransferService.getAllTransfers();
+      
+      const allTransfers = [...bankTransfers.transfers, ...userTransfers];
+      
+      allTransfers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-        const grouped = bankService.groupTransfersByDate(transfersResponse.transfers);
-        console.log('Grouped transfers:', grouped);
-        setTransactions(grouped.slice(0, 1)); // Only show last group
-      } catch (transferError) {
-        console.error('Error fetching transfers:', transferError);
-        // Don't fail completely, just show empty transactions
-      }
+      const bankGrouped = bankService.groupTransfersByDate(bankTransfers.transfers);
+      const userGrouped = userTransferService.groupTransfersByDate(userTransfers);
+      
+      const allGrouped = [...bankGrouped, ...userGrouped];
+      
+      allGrouped.sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB - dateA;
+      });
+
+      console.log('All grouped transfers:', allGrouped);
+      setTransactions(allGrouped.slice(0, 1));
 
       console.log('Data loaded successfully');
     } catch (error) {
@@ -124,6 +119,24 @@ export default function TransferPage() {
           account: 'Banco',
           initials: 'BA',
           color: '#00d084',
+          type: 'bank',
+        },
+        balance: balanceData.balance,
+        username: username,
+        publicKey: publicKey,
+      },
+    });
+  };
+
+  const handleTransferToEzPayUser = () => {
+    navigate('/admin/transfer-step2', {
+      state: {
+        recipient: {
+          name: 'Usuario EzPay',
+          account: 'Usuario',
+          initials: 'EZ',
+          color: '#ffc107',
+          type: 'ezpay_user',
         },
         balance: balanceData.balance,
         username: username,
@@ -133,22 +146,41 @@ export default function TransferPage() {
   };
 
   const handleContactClick = (contact) => {
-    navigate('/admin/transfer-step2', {
-      state: {
-        recipient: {
-          name: contact.name,
-          account: `${contact.accountType === 'cuenta' ? 'Cuenta' : 'Tarjeta'} ${contact.accountNumber}`,
-          initials: contact.initials,
-          color: contact.color,
-          accountNumber: contact.accountNumber,
-          accountType: contact.accountType,
-          bankName: contact.bank,
+    if (contact.contactType === 'ezpay_user') {
+      navigate('/admin/transfer-step2', {
+        state: {
+          recipient: {
+            name: contact.name,
+            account: `@${contact.username}`,
+            initials: contact.initials,
+            color: contact.color,
+            username: contact.username,
+            type: 'ezpay_user',
+          },
+          balance: balanceData.balance,
+          username: username,
+          publicKey: publicKey,
         },
-        balance: balanceData.balance,
-        username: username,
-        publicKey: publicKey,
-      },
-    });
+      });
+    } else {
+      navigate('/admin/transfer-step2', {
+        state: {
+          recipient: {
+            name: contact.name,
+            account: `${contact.accountType === 'cuenta' ? 'Cuenta' : 'Tarjeta'} ${contact.accountNumber}`,
+            initials: contact.initials,
+            color: contact.color,
+            accountNumber: contact.accountNumber,
+            accountType: contact.accountType,
+            bankName: contact.bank,
+            type: 'bank',
+          },
+          balance: balanceData.balance,
+          username: username,
+          publicKey: publicKey,
+        },
+      });
+    }
   };
 
   const handleTransactionClick = (transaction) => {
@@ -159,7 +191,10 @@ export default function TransferPage() {
     navigate('/admin/movements');
   };
 
-  const filteredContacts = contacts.filter((contact) => contact.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredContacts = contacts.filter((contact) => 
+    contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (contact.username && contact.username.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   if (loading) {
     return (
@@ -254,7 +289,7 @@ export default function TransferPage() {
 
         <button
           onClick={handleTransferToAccount}
-          className="w-100 bg-transparent d-flex align-items-center justify-content-between p-3 rounded-3 mb-3"
+          className="w-100 bg-transparent d-flex align-items-center justify-content-between p-3 rounded-3 mb-2"
           style={{
             border: '1px solid #444',
             cursor: 'pointer',
@@ -286,6 +321,51 @@ export default function TransferPage() {
             </div>
             <span className="text-white" style={{ fontSize: '0.95rem' }}>
               Transferir a una cuenta o tarjeta
+            </span>
+          </div>
+          <i
+            className="pi pi-chevron-right"
+            style={{
+              fontSize: '1rem',
+              color: '#888',
+            }}
+          ></i>
+        </button>
+
+        <button
+          onClick={handleTransferToEzPayUser}
+          className="w-100 bg-transparent d-flex align-items-center justify-content-between p-3 rounded-3 mb-3"
+          style={{
+            border: '1px solid #444',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          <div className="d-flex align-items-center gap-3">
+            <div
+              className="d-flex align-items-center justify-content-center rounded-circle"
+              style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: 'rgba(255, 193, 7, 0.15)',
+              }}
+            >
+              <i
+                className="pi pi-user"
+                style={{
+                  fontSize: '1.1rem',
+                  color: '#ffc107',
+                }}
+              ></i>
+            </div>
+            <span className="text-white" style={{ fontSize: '0.95rem' }}>
+              Transferir a Usuario EzPay
             </span>
           </div>
           <i

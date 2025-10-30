@@ -3,7 +3,7 @@ import request from '../fetchWrapper';
 class ConvertService {
   async convertToUsdc(fromToken, amount) {
     try {
-      const response = await request('/api/convert/to-usdc', {
+      const response = await request('/convert/to-usdc', {
         method: 'POST',
         body: {
           from_token: fromToken,
@@ -23,7 +23,7 @@ class ConvertService {
 
   async getExchangeRate(from, to) {
     try {
-      const response = await request(`/api/convert/rates?from=${from}&to=${to}`);
+      const response = await request(`/convert/rates?from=${from}&to=${to}`);
       return {
         rate: response.rate,
         source: response.source,

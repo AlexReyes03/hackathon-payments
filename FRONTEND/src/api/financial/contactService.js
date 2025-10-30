@@ -14,19 +14,36 @@ class ContactService {
   addContact(contact) {
     try {
       const contacts = this.getAllContacts();
-      const newContact = {
-        id: Date.now().toString(),
-        name: contact.name,
-        bank: contact.bank,
-        accountNumber: contact.accountNumber,
-        accountType: contact.accountType,
-        initials: contact.name.substring(0, 2).toUpperCase(),
-        color: this.generateColor(contact.name),
-        createdAt: new Date().toISOString(),
-      };
-      contacts.push(newContact);
-      localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts));
-      return newContact;
+      
+      if (contact.contactType === 'ezpay_user') {
+        const newContact = {
+          id: Date.now().toString(),
+          name: contact.name,
+          username: contact.username,
+          contactType: 'ezpay_user',
+          initials: contact.username.substring(0, 2).toUpperCase(),
+          color: this.generateColor(contact.username),
+          createdAt: new Date().toISOString(),
+        };
+        contacts.push(newContact);
+        localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts));
+        return newContact;
+      } else {
+        const newContact = {
+          id: Date.now().toString(),
+          name: contact.name,
+          bank: contact.bank,
+          accountNumber: contact.accountNumber,
+          accountType: contact.accountType,
+          contactType: 'bank',
+          initials: contact.name.substring(0, 2).toUpperCase(),
+          color: this.generateColor(contact.name),
+          createdAt: new Date().toISOString(),
+        };
+        contacts.push(newContact);
+        localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts));
+        return newContact;
+      }
     } catch (error) {
       console.error('Error adding contact:', error);
       throw error;

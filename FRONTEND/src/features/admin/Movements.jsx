@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-
 import bankService from '../../api/financial/bankService';
+import userTransferService from '../../api/financial/userTransferService';
+
 export default function Movements() {
   const [searchQuery, setSearchQuery] = useState('');
   const [transactions, setTransactions] = useState([]);
@@ -15,9 +16,49 @@ export default function Movements() {
   const loadTransfers = async () => {
     setLoading(true);
     try {
-      const response = await bankService.listTransfers();
-      const grouped = bankService.groupTransfersByDate(response.transfers);
-      setTransactions(grouped);
+      const bankTransfersData = bankService.listTransfers();
+      const userTransfersData = userTransferService.getAllTransfers();
+
+      const bankGrouped = bankService.groupTransfersByDate(bankTransfersData.transfers);
+      const userGrouped = userTransferService.groupTransfersByDate(userTransfersData);
+
+      const allGrouped = {};
+
+      bankGrouped.forEach((group) => {
+        if (!allGrouped[group.date]) {
+          allGrouped[group.date] = {
+            date: group.date,
+            items: [],
+          };
+        }
+        allGrouped[group.date].items.push(...group.items);
+      });
+
+      userGrouped.forEach((group) => {
+        if (!allGrouped[group.date]) {
+          allGrouped[group.date] = {
+            date: group.date,
+            items: [],
+          };
+        }
+        allGrouped[group.date].items.push(...group.items);
+      });
+
+      const sortedGrouped = Object.values(allGrouped).sort((a, b) => {
+        const dateA = new Date(a.items[0]?.created_at || Date.now());
+        const dateB = new Date(b.items[0]?.created_at || Date.now());
+        return dateB - dateA;
+      });
+
+      sortedGrouped.forEach((group) => {
+        group.items.sort((a, b) => {
+          const dateA = new Date(a.created_at || Date.now());
+          const dateB = new Date(b.created_at || Date.now());
+          return dateB - dateA;
+        });
+      });
+
+      setTransactions(sortedGrouped);
     } catch (error) {
       console.error('Error loading transfers:', error);
     } finally {
@@ -44,7 +85,12 @@ export default function Movements() {
     );
   };
 
-  const filteredTransactions = transactions.filter((group) => group.items.some((item) => item.description.toLowerCase().includes(searchQuery.toLowerCase()) || item.type.toLowerCase().includes(searchQuery.toLowerCase())));
+  const filteredTransactions = transactions.filter((group) =>
+    group.items.some(
+      (item) =>
+        item.description.toLowerCase().includes(searchQuery.toLowerCase()) || item.type.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
 
   if (loading) {
     return (
@@ -156,7 +202,7 @@ export default function Movements() {
                             marginTop: '0.25rem',
                           }}
                         >
-                          Rechazado - Reputación insuficiente
+                          Rechazado - Reputacion insuficiente
                         </div>
                       )}
                     </div>

@@ -1,34 +1,53 @@
-import request from '../fetchWrapper';
+const BANK_TRANSFERS_KEY = 'ezpay_bank_transfers';
 
 class BankService {
-  async createTransfer(publicKey, amountFiat, currency, bankAccount) {
+  createTransfer(publicKey, amountFiat, currency, bankAccount) {
     try {
-      const response = await request('/api/bank/transfer', {
-        method: 'POST',
-        body: {
-          public_key: publicKey,
-          amount_fiat: amountFiat,
-          currency: currency,
-          bank_account: bankAccount,
-        },
-      });
-      return response;
+      const transfers = this.getAllTransfers();
+      const newTransfer = {
+        id: `bank_${Date.now()}`,
+        public_key: publicKey,
+        amount_fiat: amountFiat,
+        currency: currency,
+        bank_account_masked: `****${bankAccount.slice(-4)}`,
+        status: 'completed',
+        reputation_score: 0,
+        created_at: new Date().toISOString(),
+      };
+      
+      transfers.push(newTransfer);
+      localStorage.setItem(BANK_TRANSFERS_KEY, JSON.stringify(transfers));
+      
+      return newTransfer;
     } catch (error) {
       console.error('Error creating bank transfer:', error);
       throw error;
     }
   }
 
-  async listTransfers() {
+  getAllTransfers() {
     try {
-      const response = await request('/api/bank/transfers');
+      const transfers = localStorage.getItem(BANK_TRANSFERS_KEY);
+      return transfers ? JSON.parse(transfers) : [];
+    } catch (error) {
+      console.error('Error loading bank transfers:', error);
+      return [];
+    }
+  }
+
+  listTransfers() {
+    try {
+      const transfers = this.getAllTransfers();
       return {
-        transfers: response.transfers || [],
-        total: response.total || 0,
+        transfers: transfers || [],
+        total: transfers.length || 0,
       };
     } catch (error) {
       console.error('Error listing transfers:', error);
-      throw error;
+      return {
+        transfers: [],
+        total: 0,
+      };
     }
   }
 
@@ -58,6 +77,7 @@ class BankService {
         status: transfer.status,
         currency: transfer.currency,
         reputationScore: transfer.reputation_score,
+        created_at: transfer.created_at,
       });
     });
 
