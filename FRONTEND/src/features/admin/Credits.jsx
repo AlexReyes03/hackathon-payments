@@ -343,7 +343,7 @@ export default function Credits() {
       >
         <div className="d-flex gap-2 align-items-start">
           <i className="pi pi-info-circle" style={{ color: '#3b82f6', fontSize: '1.1rem', marginTop: '2px' }}></i>
-          <div style={{ color: '#d1d5db', fontSize: '0.85rem', lineHeight: '1.5' }}>Los Créditos se otorgan basados en tu comportamiento en la plataforma. Mant�n un buen historial de pagos y uso responsable para acceder a mejores condiciones.</div>
+          <div style={{ color: '#d1d5db', fontSize: '0.85rem', lineHeight: '1.5' }}>Los Créditos se otorgan basados en tu comportamiento en la plataforma. Mantén un buen historial de pagos y uso responsable para acceder a mejores condiciones.</div>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
@@ -13,7 +13,6 @@ export default function TransferStep2() {
   const [bankName, setBankName] = useState('');
   const [holderName, setHolderName] = useState('');
 
-  // Obtener datos del state de navegacion
   const recipient = location.state?.recipient || {
     name: 'Receptor',
     account: 'Cuenta',
@@ -23,14 +22,23 @@ export default function TransferStep2() {
 
   const balance = location.state?.balance || 0;
   const username = location.state?.username || 'Usuario';
+  const publicKey = location.state?.publicKey;
 
-  // Detectar si es transferencia a cuenta o tarjeta
   const isAccountTransfer = recipient.name === 'Cuenta o Tarjeta' && recipient.account === 'Banco';
 
   const accountTypes = [
     { label: 'Cuenta', value: 'cuenta' },
     { label: 'Tarjeta', value: 'tarjeta' },
   ];
+
+  useEffect(() => {
+    if (!isAccountTransfer && recipient.accountNumber) {
+      setAccountNumber(recipient.accountNumber);
+      setAccountType(recipient.accountType || 'cuenta');
+      setBankName(recipient.bankName || '');
+      setHolderName(recipient.name);
+    }
+  }, [recipient, isAccountTransfer]);
 
   const handleNumberClick = (num) => {
     if (amount === '0') {
@@ -54,14 +62,9 @@ export default function TransferStep2() {
     }
   };
 
-  const handleClear = () => {
-    setAmount('0');
-  };
-
   const handleContinue = () => {
     const numericAmount = parseFloat(amount);
     if (numericAmount > 0 && numericAmount <= balance) {
-      // Si es transferencia a cuenta/tarjeta, crear nuevo objeto recipient con los datos ingresados
       let finalRecipient = recipient;
 
       if (isAccountTransfer && accountNumber && holderName && bankName) {
@@ -82,6 +85,7 @@ export default function TransferStep2() {
           recipient: finalRecipient,
           balance: balance,
           username: username,
+          publicKey: publicKey,
         },
       });
     }
@@ -89,8 +93,6 @@ export default function TransferStep2() {
 
   const numericAmount = parseFloat(amount) || 0;
   const isValidAmount = numericAmount > 0 && numericAmount <= balance;
-
-  // Validar que si es transferencia a cuenta, los campos estén completos
   const isAccountDataValid = !isAccountTransfer || (accountNumber && holderName && bankName);
   const canContinue = isValidAmount && isAccountDataValid;
 
@@ -102,7 +104,6 @@ export default function TransferStep2() {
         paddingBottom: '20px',
       }}
     >
-      {/* Titulo */}
       <h2
         className="mb-4"
         style={{
@@ -114,7 +115,6 @@ export default function TransferStep2() {
         Tu Billetera
       </h2>
 
-      {/* Card de Balance con Degradado Radial */}
       <div
         className="p-4 mb-4"
         style={{
@@ -143,7 +143,6 @@ export default function TransferStep2() {
         <div style={{ color: '#d1d5db', fontSize: '0.9rem' }}>Valor total estimado (MXN)</div>
       </div>
 
-      {/* Seccion Ingresa el monto */}
       <div className="mb-4">
         <h3
           className="mb-3"
@@ -156,10 +155,8 @@ export default function TransferStep2() {
           Ingresa el monto
         </h3>
 
-        {/* Informacion del Receptor o Formulario */}
         {isAccountTransfer ? (
           <div className="mb-4">
-            {/* Tipo de cuenta/tarjeta */}
             <div className="mb-3">
               <label
                 style={{
@@ -190,7 +187,6 @@ export default function TransferStep2() {
               />
             </div>
 
-            {/* Nombre del titular */}
             <div className="mb-3">
               <label
                 style={{
@@ -218,7 +214,6 @@ export default function TransferStep2() {
               />
             </div>
 
-            {/* Número de cuenta o tarjeta */}
             <div className="mb-3">
               <label
                 style={{
@@ -247,7 +242,6 @@ export default function TransferStep2() {
               />
             </div>
 
-            {/* Banco */}
             <div className="mb-3">
               <label
                 style={{
@@ -316,7 +310,6 @@ export default function TransferStep2() {
         )}
       </div>
 
-      {/* Monto Grande - Editable */}
       <div className="text-center mb-4">
         <div
           style={{
@@ -332,10 +325,8 @@ export default function TransferStep2() {
         {numericAmount > balance && <div style={{ color: '#ef4444', fontSize: '0.9rem', marginTop: '0.5rem' }}>Monto superior al balance disponible</div>}
       </div>
 
-      {/* Teclado Numerico */}
       <div className="mb-4">
         <div className="d-grid gap-3" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          {/* Numeros 1-9 */}
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
             <button
               key={num}
@@ -362,7 +353,6 @@ export default function TransferStep2() {
             </button>
           ))}
 
-          {/* Boton punto decimal */}
           <button
             onClick={handleDecimalClick}
             className="btn"
@@ -386,7 +376,6 @@ export default function TransferStep2() {
             .
           </button>
 
-          {/* Numero 0 */}
           <button
             onClick={() => handleNumberClick('0')}
             className="btn"
@@ -410,7 +399,6 @@ export default function TransferStep2() {
             0
           </button>
 
-          {/* Boton borrar */}
           <button
             onClick={handleDelete}
             className="btn d-flex align-items-center justify-content-center"
@@ -435,7 +423,6 @@ export default function TransferStep2() {
         </div>
       </div>
 
-      {/* Boton Continuar */}
       <div className="w-100 mt-4">
         <Button
           label="Continuar"

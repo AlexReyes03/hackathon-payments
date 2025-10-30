@@ -9,7 +9,6 @@ export default function TransferStep3() {
   const [concept, setConcept] = useState('');
   const [reference, setReference] = useState('');
 
-  // Datos del state de navegacion
   const amount = location.state?.amount || 0;
   const recipient = location.state?.recipient || {
     name: 'Receptor',
@@ -19,14 +18,15 @@ export default function TransferStep3() {
   };
   const balance = location.state?.balance || 0;
   const username = location.state?.username || 'Usuario';
+  const publicKey = location.state?.publicKey;
 
   const handleModify = () => {
-    // Volver a TransferStep2 sin el monto (resetear)
     navigate('/admin/transfer-step2', {
       state: {
         recipient: recipient,
         balance: balance,
         username: username,
+        publicKey: publicKey,
       },
     });
   };
@@ -39,6 +39,7 @@ export default function TransferStep3() {
       reference: reference,
       date: new Date().toISOString(),
       username: username,
+      publicKey: publicKey,
     };
 
     navigate('/admin/transfer-success', {
@@ -55,7 +56,6 @@ export default function TransferStep3() {
         paddingBottom: '100px',
       }}
     >
-      {/* Titulo */}
       <h2
         className="mb-4"
         style={{
@@ -67,7 +67,6 @@ export default function TransferStep3() {
         Revisa los datos
       </h2>
 
-      {/* Informacion del Receptor */}
       <div className="d-flex align-items-center gap-3 mb-4">
         <div
           className="d-flex align-items-center justify-content-center"
@@ -117,7 +116,29 @@ export default function TransferStep3() {
         </div>
       </div>
 
-      {/* Monto */}
+      {/* Conversion Preview */}
+      <div
+        className="p-3 mb-4"
+        style={{
+          backgroundColor: '#2a2a2a',
+          borderRadius: '12px',
+          border: '1px solid #3a3a3a',
+        }}
+      >
+        <div className="text-white-50 mb-2" style={{ fontSize: '0.85rem' }}>
+          Proceso de conversión
+        </div>
+        <div className="d-flex flex-column gap-2">
+          <div className="d-flex align-items-center gap-2">
+            <span style={{ color: '#ffffff', fontSize: '0.9rem' }}>Cripto</span>
+            <i className="pi pi-arrow-right" style={{ color: '#9ca3af', fontSize: '0.7rem' }}></i>
+            <span style={{ color: '#00d084', fontSize: '0.9rem' }}>USDC</span>
+            <i className="pi pi-arrow-right" style={{ color: '#9ca3af', fontSize: '0.7rem' }}></i>
+            <span style={{ color: '#ffc107', fontSize: '0.9rem' }}>MXN ${amount.toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
+
       <div className="mb-4">
         <label
           style={{
@@ -156,7 +177,6 @@ export default function TransferStep3() {
         </div>
       </div>
 
-      {/* Concepto (opcional) */}
       <div className="mb-4">
         <label
           htmlFor="concept"
@@ -186,7 +206,6 @@ export default function TransferStep3() {
         />
       </div>
 
-      {/* Numero de referencia (opcional) */}
       <div className="mb-4">
         <label
           htmlFor="reference"
@@ -216,10 +235,8 @@ export default function TransferStep3() {
         />
       </div>
 
-      {/* Espaciador */}
       <div className="flex-grow-1"></div>
 
-      {/* Boton Transferir */}
       <div className="w-100 mt-auto pt-4">
         <Button
           label="Transferir"

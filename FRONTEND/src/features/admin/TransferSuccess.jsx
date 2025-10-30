@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from 'primereact/button';
+import bankService from '../../api/financial/bankService';
 
 export default function TransferSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [transferResult, setTransferResult] = useState(null);
 
-  // Datos de la transferencia
   const transferData = location.state || {
     amount: 0,
     recipient: {
@@ -19,6 +22,29 @@ export default function TransferSuccess() {
     reference: '',
     date: new Date().toISOString(),
     username: 'Usuario',
+    publicKey: '',
+  };
+
+  useEffect(() => {
+    executeTransfer();
+  }, []);
+
+  const executeTransfer = async () => {
+    try {
+      const response = await bankService.createTransfer(transferData.publicKey, transferData.amount, 'MXN', transferData.recipient.accountNumber || 'unknown');
+
+      setTransferResult({
+        id: response.id,
+        status: response.status,
+        message: response.message,
+        details: response.transfer_details,
+      });
+    } catch (err) {
+      setError(err.message || 'Error al procesar la transferencia');
+      console.error('Transfer error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatDate = (isoDate) => {
@@ -47,6 +73,84 @@ export default function TransferSuccess() {
     console.log('Compartir comprobante');
   };
 
+  if (loading) {
+    return (
+      <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '400px' }}>
+        <div className="spinner-border text-warning mb-3" role="status">
+          <span className="visually-hidden">Procesando...</span>
+        </div>
+        <p className="text-white">Procesando transferencia...</p>
+      </div>
+    );
+  }
+
+  if (error || transferResult?.status !== 'completed') {
+    return (
+      <div
+        className="d-flex flex-column px-4 py-4"
+        style={{
+          backgroundColor: '#181A1B',
+          minHeight: 'calc(100vh - 120px)',
+        }}
+      >
+        <div className="text-center mb-4">
+          <div
+            className="d-flex align-items-center justify-content-center mx-auto mb-3"
+            style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(239, 68, 68, 0.2)',
+            }}
+          >
+            <i
+              className="pi pi-times"
+              style={{
+                fontSize: '2.5rem',
+                color: '#ef4444',
+              }}
+            ></i>
+          </div>
+          <h2
+            style={{
+              color: '#ffffff',
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              marginBottom: '0.5rem',
+            }}
+          >
+            Transferencia rechazada
+          </h2>
+          <p
+            style={{
+              color: '#9ca3af',
+              fontSize: '1rem',
+            }}
+          >
+            {error || transferResult?.message || 'No se pudo completar la transferencia'}
+          </p>
+        </div>
+
+        <div className="w-100 mt-4">
+          <Button
+            label="Volver"
+            onClick={handleDone}
+            className="w-100"
+            style={{
+              backgroundColor: '#ffc107',
+              border: 'none',
+              borderRadius: '25px',
+              padding: '0.875rem',
+              fontSize: '1rem',
+              fontWeight: '600',
+              color: '#000000',
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="d-flex flex-column px-4 py-4"
@@ -56,7 +160,6 @@ export default function TransferSuccess() {
         paddingBottom: '100px',
       }}
     >
-      {/* Icono de Exito */}
       <div className="text-center mb-4">
         <div
           className="d-flex align-items-center justify-content-center mx-auto mb-3"
@@ -95,7 +198,6 @@ export default function TransferSuccess() {
         </p>
       </div>
 
-      {/* Ticket de Pago */}
       <div
         className="p-4 mb-4"
         style={{
@@ -104,7 +206,6 @@ export default function TransferSuccess() {
           border: '1px solid #3a3a3a',
         }}
       >
-        {/* Monto */}
         <div className="text-center mb-4 pb-4" style={{ borderBottom: '1px solid #3a3a3a' }}>
           <div
             style={{
@@ -126,7 +227,6 @@ export default function TransferSuccess() {
           </div>
         </div>
 
-        {/* Receptor */}
         <div className="mb-4">
           <div
             style={{
@@ -187,9 +287,7 @@ export default function TransferSuccess() {
           </div>
         </div>
 
-        {/* Detalles de la Transaccion */}
         <div className="pt-3" style={{ borderTop: '1px solid #3a3a3a' }}>
-          {/* Fecha y Hora */}
           <div className="d-flex justify-content-between mb-3">
             <span style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Fecha</span>
             <span style={{ color: '#ffffff', fontSize: '0.9rem', fontWeight: '500' }}>{formatDate(transferData.date)}</span>
@@ -199,7 +297,6 @@ export default function TransferSuccess() {
             <span style={{ color: '#ffffff', fontSize: '0.9rem', fontWeight: '500' }}>{formatTime(transferData.date)}</span>
           </div>
 
-          {/* ID de Transaccion */}
           <div className="d-flex justify-content-between mb-3">
             <span style={{ color: '#9ca3af', fontSize: '0.9rem' }}>ID de transaccion</span>
             <span
@@ -210,11 +307,10 @@ export default function TransferSuccess() {
                 fontFamily: 'monospace',
               }}
             >
-              {Math.random().toString(36).substring(2, 15).toUpperCase()}
+              {transferResult?.id?.substring(0, 12).toUpperCase() || 'N/A'}
             </span>
           </div>
 
-          {/* Concepto (si existe) */}
           {transferData.concept && (
             <div className="d-flex justify-content-between mb-3">
               <span style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Concepto</span>
@@ -222,7 +318,6 @@ export default function TransferSuccess() {
             </div>
           )}
 
-          {/* Referencia (si existe) */}
           {transferData.reference && (
             <div className="d-flex justify-content-between mb-3">
               <span style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Referencia</span>
@@ -230,7 +325,6 @@ export default function TransferSuccess() {
             </div>
           )}
 
-          {/* Remitente */}
           <div className="d-flex justify-content-between">
             <span style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Remitente</span>
             <span style={{ color: '#ffffff', fontSize: '0.9rem', fontWeight: '500' }}>{transferData.username}</span>
@@ -238,9 +332,7 @@ export default function TransferSuccess() {
         </div>
       </div>
 
-      {/* Botones de Accion */}
       <div className="d-flex flex-column gap-3">
-        {/* Boton Compartir Comprobante */}
         <Button
           label="Compartir comprobante"
           icon="pi pi-share-alt"
@@ -257,7 +349,6 @@ export default function TransferSuccess() {
           }}
         />
 
-        {/* Boton Listo */}
         <Button
           label="Listo"
           onClick={handleDone}

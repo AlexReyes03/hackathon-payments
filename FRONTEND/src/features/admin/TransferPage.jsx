@@ -1,65 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import BalanceCard from './components/BalanceCard';
 import ContactCarousel from './components/ContactCarousel';
 import TransactionItem from './components/TransactionItem';
 
+import AddAccountModal from './components/AddAccountModal';
+import walletService from '../../api/financial/walletService';
+import convertService from '../../api/financial/convertService';
+import bankService from '../../api/financial/bankService';
+import contactService from '../../api/financial/contactService';
+
 export default function TransferPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [balanceData, setBalanceData] = useState({
+    balance: 0,
+    percentage: 0,
+  });
+  const [contacts, setContacts] = useState([]);
+  const [transactions, setTransactions] = useState([]);
 
-  // Mock data - Replace with real data from API
-  const balanceData = {
-    balance: 34378.0,
-    percentage: 12.4,
-  };
-
-  const contacts = [
-    { id: 1, name: 'Juan', initials: 'JU', color: '#ef4444' },
-    { id: 2, name: 'Alejandro', initials: 'AL', color: '#3b82f6' },
-    { id: 3, name: 'Josef', initials: 'JO', color: '#10b981' },
-    { id: 4, name: 'Jafet', initials: 'JF', color: '#f59e0b' },
-    { id: 5, name: 'Maria', initials: 'MA', color: '#ec4899' },
-    { id: 6, name: 'Carlos', initials: 'CA', color: '#8b5cf6' },
-    { id: 7, name: 'Ana', initials: 'AN', color: '#06b6d4' },
-    { id: 8, name: 'Pedro', initials: 'PE', color: '#f97316' },
-    { id: 9, name: 'Sofia', initials: 'SO', color: '#a855f7' },
-    { id: 10, name: 'Luis', initials: 'LU', color: '#14b8a6' },
-  ];
-
-  const transactions = [
-    {
-      id: 1,
-      date: '25 de octubre',
-      items: [
-        {
-          icon: 'pi pi-calendar',
-          title: 'Transferencia Crypto',
-          subtitle: 'Restaurante Cuernavaca',
-          amount: 100.0,
-          type: 'expense',
-        },
-        {
-          icon: 'pi pi-calendar',
-          title: 'Transferencia Crypto',
-          subtitle: 'Restaurante Cuernavaca',
-          amount: 100.0,
-          type: 'expense',
-        },
-        {
-          icon: 'pi pi-arrow-down',
-          title: 'Transferencia Crypto',
-          subtitle: 'Restaurante Cuernavaca',
-          amount: 100.0,
-          type: 'income',
-        },
-      ],
-    },
-  ];
-
+  const publicKey = user?.wallet_public_key;
   const username = user?.first_name ? `${user.first_name} ${user.last_name_paternal}` : user?.username || 'Usuario';
+
+  useEffect(() => {
+    console.log('TransferPage mounted');
+    console.log('User:', user);
+    console.log('Public Key:', publicKey);
+
+    if (!publicKey) {
+      console.warn('No public key found, skipping load');
+      setLoading(false);
+      setError('No se encontró la clave pública de la billetera');
+      return;
+    }
+
+    loadData();
+  }, [publicKey]);
+
+  const loadData = async () => {
+    console.log('Starting loadData...');
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Load contacts from localStorage (sync operation)
+      console.log('Loading contacts...');
+      const loadedContacts = contactService.getAllContacts();
+      console.log('Contacts loaded:', loadedContacts);
+      setContacts(loadedContacts);
+
+      // Try to load balance
+      console.log('Fetching balance for:', publicKey);
+      let totalMXN = 0;
+      try {
+        const balanceResponse = await walletService.getBalance(publicKey);
+        console.log('Balance response:', balanceResponse);
+
+        if (balanceResponse.balances && balanceResponse.balances.length > 0) {
+          totalMXN = await convertService.calculateTotalBalanceInMXN(balanceResponse.balances);
+          console.log('Total MXN calculated:', totalMXN);
+        }
+      } catch (balanceError) {
+        console.error('Error fetching balance:', balanceError);
+        // Don't fail completely, just use 0 balance
+      }
+
+      setBalanceData({
+        balance: totalMXN,
+        percentage: 12.4, // Mock percentage for now
+      });
+
+      // Try to load transfers
+      console.log('Fetching transfers...');
+      try {
+        const transfersResponse = await bankService.listTransfers();
+        console.log('Transfers response:', transfersResponse);
+
+        const grouped = bankService.groupTransfersByDate(transfersResponse.transfers);
+        console.log('Grouped transfers:', grouped);
+        setTransactions(grouped.slice(0, 1)); // Only show last group
+      } catch (transferError) {
+        console.error('Error fetching transfers:', transferError);
+        // Don't fail completely, just show empty transactions
+      }
+
+      console.log('Data loaded successfully');
+    } catch (error) {
+      console.error('Error in loadData:', error);
+      setError(error.message || 'Error al cargar los datos');
+    } finally {
+      console.log('Setting loading to false');
+      setLoading(false);
+    }
+  };
 
   const handleBuyClick = () => {
     console.log('Comprar clicked');
@@ -70,7 +109,11 @@ export default function TransferPage() {
   };
 
   const handleAddContact = () => {
-    console.log('Agregar contacto');
+    setShowAddModal(true);
+  };
+
+  const handleContactAdded = (newContact) => {
+    setContacts([...contacts, newContact]);
   };
 
   const handleTransferToAccount = () => {
@@ -84,6 +127,7 @@ export default function TransferPage() {
         },
         balance: balanceData.balance,
         username: username,
+        publicKey: publicKey,
       },
     });
   };
@@ -93,12 +137,16 @@ export default function TransferPage() {
       state: {
         recipient: {
           name: contact.name,
-          account: `Cuenta **** ${Math.floor(1000 + Math.random() * 9000)}`,
+          account: `${contact.accountType === 'cuenta' ? 'Cuenta' : 'Tarjeta'} ${contact.accountNumber}`,
           initials: contact.initials,
           color: contact.color,
+          accountNumber: contact.accountNumber,
+          accountType: contact.accountType,
+          bankName: contact.bank,
         },
         balance: balanceData.balance,
         username: username,
+        publicKey: publicKey,
       },
     });
   };
@@ -111,9 +159,42 @@ export default function TransferPage() {
     navigate('/admin/movements');
   };
 
+  const filteredContacts = contacts.filter((contact) => contact.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  if (loading) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+        <div className="spinner-border text-warning mb-3" role="status">
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+        <p className="text-white-50">Cargando datos de tu billetera...</p>
+      </div>
+    );
+  }
+
+  if (error && !publicKey) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+        <div className="text-center">
+          <i className="pi pi-exclamation-triangle text-warning mb-3" style={{ fontSize: '3rem' }}></i>
+          <h4 className="text-white mb-3">Error</h4>
+          <p className="text-white-50 mb-4">{error}</p>
+          <button onClick={() => navigate('/admin/wallet')} className="btn btn-warning">
+            Volver
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ paddingBottom: '100px' }}>
-      {/* Section: Tu Billetera */}
+      {error && (
+        <div className="alert alert-warning mb-3" role="alert">
+          {error}
+        </div>
+      )}
+
       <div className="mb-4">
         <h6 className="text-white mb-3" style={{ fontSize: '0.95rem', fontWeight: '500' }}>
           Tu Billetera
@@ -121,15 +202,12 @@ export default function TransferPage() {
         <BalanceCard balance={balanceData.balance} percentage={balanceData.percentage} username={username} onBuyClick={handleBuyClick} />
       </div>
 
-      {/* Section: Transferir Rapidamente */}
       <div className="mb-4">
         <h6 className="text-white mb-3" style={{ fontSize: '0.95rem', fontWeight: '500' }}>
           Transferir Rapidamente
         </h6>
 
-        {/* Search and Add */}
         <div className="d-flex gap-2 mb-3">
-          {/* Search Input */}
           <div className="flex-grow-1 position-relative">
             <i
               className="pi pi-search position-absolute top-50 translate-middle-y ms-3"
@@ -156,7 +234,6 @@ export default function TransferPage() {
             />
           </div>
 
-          {/* Add Button */}
           <button
             onClick={handleAddContact}
             className="btn d-flex align-items-center gap-2 px-3"
@@ -175,10 +252,9 @@ export default function TransferPage() {
           </button>
         </div>
 
-        {/* Transfer to Account Option */}
         <button
           onClick={handleTransferToAccount}
-          className="w-100 bg-transparent d-flex align-items-center justify-content-between p-3 rounded-3"
+          className="w-100 bg-transparent d-flex align-items-center justify-content-between p-3 rounded-3 mb-3"
           style={{
             border: '1px solid #444',
             cursor: 'pointer',
@@ -222,12 +298,12 @@ export default function TransferPage() {
         </button>
       </div>
 
-      {/* Section: Contact Carousel */}
-      <div className="mb-4">
-        <ContactCarousel contacts={contacts} onContactClick={handleContactClick} />
-      </div>
+      {filteredContacts.length > 0 && (
+        <div className="mb-4">
+          <ContactCarousel contacts={filteredContacts} onContactClick={handleContactClick} />
+        </div>
+      )}
 
-      {/* Section: Ultimas Transferencias */}
       <div className="mb-3">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h6 className="text-white mb-0" style={{ fontSize: '0.95rem', fontWeight: '500' }}>
@@ -246,38 +322,48 @@ export default function TransferPage() {
           </button>
         </div>
 
-        {/* Transactions List */}
-        <div>
-          {transactions.map((group) => (
-            <div key={group.id} className="mb-3">
-              {/* Date Header */}
-              <div
-                className="px-3 py-2 mb-2"
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '8px',
-                }}
-              >
-                <div className="d-flex justify-content-between align-items-center">
-                  <span className="text-white-50" style={{ fontSize: '0.85rem' }}>
-                    {group.date}
-                  </span>
-                  <span className="text-white-50" style={{ fontSize: '0.85rem' }}>
-                    Saldo del dia $100,000
-                  </span>
+        {transactions.length > 0 ? (
+          <div>
+            {transactions.map((group, groupIndex) => (
+              <div key={groupIndex} className="mb-3">
+                <div
+                  className="px-3 py-2 mb-2"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderRadius: '8px',
+                  }}
+                >
+                  <div className="d-flex justify-content-between align-items-center">
+                    <span className="text-white-50" style={{ fontSize: '0.85rem' }}>
+                      {group.date}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="d-flex flex-column">
+                  {group.items.slice(0, 3).map((transaction, index) => (
+                    <TransactionItem
+                      key={index}
+                      icon={`pi pi-${transaction.icon}`}
+                      title={transaction.type}
+                      subtitle={transaction.description}
+                      amount={Math.abs(transaction.amount)}
+                      type={transaction.amount < 0 ? 'expense' : 'income'}
+                      onClick={() => handleTransactionClick(transaction)}
+                    />
+                  ))}
                 </div>
               </div>
-
-              {/* Transaction Items */}
-              <div className="d-flex flex-column">
-                {group.items.map((transaction, index) => (
-                  <TransactionItem key={index} icon={transaction.icon} title={transaction.title} subtitle={transaction.subtitle} amount={transaction.amount} type={transaction.type} onClick={() => handleTransactionClick(transaction)} />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-white-50 py-4">
+            <p>No hay transferencias recientes</p>
+          </div>
+        )}
       </div>
+
+      <AddAccountModal show={showAddModal} onHide={() => setShowAddModal(false)} onContactAdded={handleContactAdded} />
     </div>
   );
 }
