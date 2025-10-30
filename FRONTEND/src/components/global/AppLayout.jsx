@@ -23,11 +23,11 @@ export default function AppLayout() {
 
             <Navbar />
 
-            <Tabbar />
-
             <main className='app-main'>
                 <Outlet />
             </main>
+
+            <Tabbar />
         </>
     )
 }

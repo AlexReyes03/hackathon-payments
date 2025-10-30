@@ -10,6 +10,8 @@ import LoginForm from '../features/auth/LoginForm';
 import RegisterForm from '../features/auth/RegisterForm'
 
 import AdminDashboard from '../features/admin/UserDashboard';
+import Profile from '../features/admin/Profile';
+import Movements from '../features/admin/Movements';
 
 export default function AppRouter() {
     return (
@@ -27,10 +29,19 @@ export default function AppRouter() {
                     </AuthLayout>
                 }
                 />
+            
 
 
                 <Route element={<AppLayout />}>
                     <Route path='admin/dashboard' element={<AdminDashboard />} />
+                </Route>
+
+                <Route element={<AppLayout />}>
+                    <Route path='admin/profile' element={<Profile />} />
+                </Route>
+
+                <Route element={<AppLayout />}>
+                    <Route path='admin/movements' element={<Movements />} />
                 </Route>
                 
             </Route>
