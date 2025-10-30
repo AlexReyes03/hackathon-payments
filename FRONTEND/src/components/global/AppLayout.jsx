@@ -23,8 +23,8 @@ export default function AppLayout() {
 
             <Navbar />
 
-            <main className='app-main mx-3' style={{backgroundColor: '#181A1B'}}>
-                <Outlet />
+            <main className='app-main px-3 pt-2' style={{backgroundColor: '#181A1B'}}>
+                <Outlet/>
             </main>
 
             <Tabbar />

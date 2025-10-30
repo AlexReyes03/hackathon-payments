@@ -12,6 +12,7 @@ import RegisterForm from '../features/auth/RegisterForm'
 import AdminDashboard from '../features/admin/UserDashboard';
 import Profile from '../features/admin/Profile';
 import Movements from '../features/admin/Movements';
+import TransferPage from '../features/admin/TransferPage';
 import TransferStep2 from '../features/admin/TransferStep2';
 import TransferStep3 from '../features/admin/TransferStep3';
 
@@ -38,11 +39,12 @@ export default function AppRouter() {
                 <Route element={<AppLayout />}>
                     {/* Admin Routes */}
                     <Route path='admin/dashboard' element={<AdminDashboard />} />
+                    <Route path='admin/movements' element={<Movements />} />
+                    <Route path='admin/transfer' element={<TransferPage />} />
                     <Route path='admin/transfer3' element={<TransferStep3 />} />
                     <Route path='admin/transfer2' element={<TransferStep2 />} />
-                    <Route path='admin/movements' element={<Movements />} />
+                    <Route path='admin/credits' element={<TransferPage />} />
                     <Route path='admin/profile' element={<Profile />} />
-                    <Route path='admin/dashboard' element={<AdminDashboard />} />
                 </Route>
             </Route>
         </Routes>
