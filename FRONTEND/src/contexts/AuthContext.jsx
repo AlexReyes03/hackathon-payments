@@ -36,6 +36,8 @@ export function AuthProvider({ children }) {
       localStorage.setItem('ezpay_user', JSON.stringify(payload.user));
       setUser(payload.user);
       return payload.user;
+    } catch (error) {
+      throw error;
     } finally {
       setLoading(false);
     }

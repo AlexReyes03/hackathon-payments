@@ -27,15 +27,21 @@ export default function AppRouter() {
                     </AuthLayout>
                 }
                 />
-            </Route>
 
-            {/* Private Routes */}
-            <Route element={<PrivateRouter allowedRoles={['ADMIN']} />}>
+
                 <Route element={<AppLayout />}>
-                    {/* Admin Routes */}
                     <Route path='admin/dashboard' element={<AdminDashboard />} />
                 </Route>
+                
             </Route>
+
+            {/* Private Routes 
+            <Route element={<PrivateRouter allowedRoles={['ADMIN']} />}>
+                <Route element={<AppLayout />}>
+                    {/* Admin Routes
+                    <Route path='admin/dashboard' element={<AdminDashboard />} />
+                </Route>
+            </Route>*/}
         </Routes>
 
 

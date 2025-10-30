@@ -24,13 +24,27 @@ export const logout = async () => {
 
 /**
  * Register new user
- * @param {Object} userData - User registration data
+ * @param {Object} userData - User registration data from frontend
  * @returns {Promise<Object>} - { token, user }
  */
 export const register = async (userData) => {
+    // Map frontend field names to backend field names
+    const backendData = {
+        username: userData.usuario,
+        email: userData.correo,
+        password: userData.contrasena,
+        pin: userData.pin,
+        first_name: userData.nombre,
+        last_name_paternal: userData.apellidoPaterno,
+        last_name_maternal: userData.apellidoMaterno || '',
+        birth_date: userData.fechaNacimiento, // Already in YYYY-MM-DD format
+        aa_mode: false, // Default to regular wallet
+        role: 'ADMIN', // All users are admin for hackathon
+    };
+
     return await request('/auth/register', {
         method: 'POST',
-        body: userData,
+        body: backendData,
     });
 };
 

@@ -20,10 +20,6 @@ export default function AppLayout() {
 
     return (
         <>
-            <Helmet>
-                <title>EZ Payments - {ROLE_NAME}</title>
-                <meta name='description' content={`Sistema de Pagos descentralizados`} />
-            </Helmet>
 
             <Navbar />
 
