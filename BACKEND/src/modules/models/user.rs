@@ -73,6 +73,7 @@ pub struct UserResponse {
     pub last_name_maternal: String,
     pub birth_date: String,
     pub wallet_id: Option<String>,
+    pub wallet_public_key: Option<String>,
     pub role_id: String,
     pub created_at: String,
 }
@@ -88,6 +89,7 @@ impl From<User> for UserResponse {
             last_name_maternal: user.last_name_maternal,
             birth_date: user.birth_date.clone(),
             wallet_id: user.wallet_id,
+            wallet_public_key: None,
             role_id: user.role_id,
             created_at: user.created_at.format("%Y-%m-%d %H:%M:%S").to_string(),
         }

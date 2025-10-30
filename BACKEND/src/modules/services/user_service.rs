@@ -144,11 +144,25 @@ impl UserService {
         // Generate JWT token
         let token = self.generate_token(&user.id, &user.username, &user.role_id)?;
 
+        // Get wallet public key if user has a wallet
+        let wallet_public_key = if let Some(wallet_id) = &user.wallet_id {
+            self.wallet_service
+                .wallet_repo
+                .find_by_id(wallet_id)
+                .await?
+                .map(|w| w.public_key)
+        } else {
+            None
+        };
+
         tracing::info!("User logged in: {}", user.username);
+
+        let mut user_response = UserResponse::from(user);
+        user_response.wallet_public_key = wallet_public_key;
 
         Ok(LoginResponse {
             token,
-            user: UserResponse::from(user),
+            user: user_response,
         })
     }
 
