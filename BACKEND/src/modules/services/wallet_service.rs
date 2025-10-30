@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use std::sync::Arc;
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use rand::{rngs::OsRng, Rng};
-use sha2::{Sha256, Digest};
+use stellar_strkey::{ed25519, Strkey};
 
 use crate::modules::models::{
     wallet::{GenerateWalletResponse, Wallet},
@@ -173,38 +173,14 @@ impl WalletService {
     }
 
     fn encode_stellar_public(key: &VerifyingKey) -> String {
-        let version_byte: u8 = 6 << 3;
-        let mut data = vec![version_byte];
-        data.extend_from_slice(key.as_bytes());
-        
-        let checksum = Self::calculate_checksum(&data);
-        data.extend_from_slice(&checksum);
-        
-        let encoded = base32::encode(base32::Alphabet::RFC4648 { padding: false }, &data);
-        format!("G{}", encoded)
+        // Use stellar-strkey to properly encode the public key (56 characters)
+        let public_key_bytes: [u8; 32] = key.to_bytes();
+        Strkey::PublicKeyEd25519(ed25519::PublicKey(public_key_bytes)).to_string()
     }
 
     fn encode_stellar_secret(key: &SigningKey) -> String {
-        let version_byte: u8 = 18 << 3;
-        let mut data = vec![version_byte];
-        data.extend_from_slice(key.as_bytes());
-        
-        let checksum = Self::calculate_checksum(&data);
-        data.extend_from_slice(&checksum);
-        
-        let encoded = base32::encode(base32::Alphabet::RFC4648 { padding: false }, &data);
-        format!("S{}", encoded)
-    }
-
-    fn calculate_checksum(data: &[u8]) -> Vec<u8> {
-        let mut hasher = Sha256::new();
-        hasher.update(data);
-        let first_hash = hasher.finalize();
-        
-        let mut hasher = Sha256::new();
-        hasher.update(&first_hash);
-        let second_hash = hasher.finalize();
-        
-        second_hash[..2].to_vec()
+        // Use stellar-strkey to properly encode the secret key (56 characters)
+        let secret_key_bytes: [u8; 32] = key.to_bytes();
+        Strkey::PrivateKeyEd25519(ed25519::PrivateKey(secret_key_bytes)).to_string()
     }
 }
