@@ -25,7 +25,7 @@ pub fn create_router(state: AppState) -> Router {
         .route("/wallet/generate", post(wallet::generate_wallet))
         .route("/wallet/fund", post(wallet::fund_wallet))
         .route("/wallet/:pubkey/balance", get(wallet::get_balance))
-    .route("/wallets", get(wallet::list_wallets))
+        // .route("/wallets", get(wallet::list_wallets)) // TODO: Implement this endpoint
         .route("/wallet/:pubkey/send", post(wallet::send_transaction))
         
         .route("/reputation/:pubkey", get(reputation::get_reputation))
@@ -39,8 +39,8 @@ pub fn create_router(state: AppState) -> Router {
         .route("/admin/stats", get(admin::get_stats))
         .route("/admin/health-details", get(admin::health_details))
         .route("/admin/aa-accounts", get(admin::list_aa_accounts))
-        .route("/admin/aa-accounts/:pubkey/secret", get(admin::get_aa_account_secret))
-        .route("/admin/aa-accounts/register", post(admin::register_aa_signer))
+        // .route("/admin/aa-accounts/:pubkey/secret", get(admin::get_aa_account_secret)) // TODO: Implement
+        // .route("/admin/aa-accounts/register", post(admin::register_aa_signer)) // TODO: Implement
         
         .route("/aa/relayer", post(wallet::aa_relay_transaction))
         
