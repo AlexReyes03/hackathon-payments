@@ -11,7 +11,7 @@ export default function AppLayout() {
     const ROLE_NAME = useMemo(() => {
         if (!user) return [];
 
-        switch (user.role.name) {
+        switch (user.role_id) {
             case 'ADMIN':
                 return 'Administrador';
         }
@@ -23,8 +23,13 @@ export default function AppLayout() {
 
             <Navbar />
 
-            <main className='app-main'>
-                <Outlet />
+            <main className='app-main px-3 pt-2' style={{
+                backgroundColor: '#181A1B',
+                paddingBottom: '100px',
+                minHeight: '100vh',
+                overflowY: 'auto'
+            }}>
+                <Outlet/>
             </main>
 
             <Tabbar />
