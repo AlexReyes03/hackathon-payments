@@ -61,11 +61,11 @@ impl UserService {
             .context("Invalid birth date format. Use YYYY-MM-DD")?;
 
         // Hash password
-        let password_hash = hash(&request.password, DEFAULT_COST)
+        let password_hash = hash(&request.password, BCRYPT_COST)
             .context("Failed to hash password")?;
 
         // Hash PIN
-        let pin_hash = hash(&request.pin, DEFAULT_COST)
+        let pin_hash = hash(&request.pin, BCRYPT_COST)
             .context("Failed to hash PIN")?;
 
         // Create user
